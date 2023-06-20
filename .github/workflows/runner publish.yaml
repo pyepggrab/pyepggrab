@@ -1,0 +1,16 @@
+name: Actions (publish)
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+  lint:
+    uses: ./.github/workflows/lint.yaml
+  publish:
+    needs: [test, lint]
+    secrets: inherit
+    uses: ./.github/workflows/publish.yaml

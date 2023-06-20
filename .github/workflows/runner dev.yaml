@@ -1,0 +1,13 @@
+name: Actions (dev)
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+  pull_request:
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yaml
+  lint:
+    uses: ./.github/workflows/lint.yaml

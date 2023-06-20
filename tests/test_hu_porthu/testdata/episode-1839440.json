@@ -1,0 +1,43 @@
+{
+    "id": "event-tv-1156783174-9",
+    "start_datetime": "2023-02-09T23:05:00+01:00",
+    "start_time": "23:05",
+    "start_ts": 1675980300,
+    "end_time": "00:00",
+    "end_datetime": "2023-02-10T00:00:00+01:00",
+    "is_child_event": false,
+    "title": "Pusztító viharok nyomában",
+    "sound_quality": null,
+    "italics": null,
+    "episode_title": null,
+    "description": null,
+    "short_description": "amerikai dokumentumfilm, I / 3. rész",
+    "highlight": null,
+    "is_repeat": false,
+    "is_live_mp": false,
+    "is_overlapping": false,
+    "film_id": "movie-226436",
+    "film_url": "/adatlap/film/tv/pusztito-viharok-nyomaban-deadline-to-disaster/event-tv-1156783174-9/episode-1839440",
+    "favorite_url": null,
+    "del_calendar_url": null,
+    "has_reminder": false,
+    "show_reminder": true,
+    "is_notified": false,
+    "show_notification": true,
+    "media_url": null,
+    "media": null,
+    "has_video": false,
+    "attributes_text": "",
+    "outer_links": {
+        "film_outer_link": null,
+        "watch_movie_link": null,
+        "extra_link": null
+    },
+    "restriction": {
+        "age_limit": 12,
+        "ageLimitImage": "/img/agelimit/vector/12_age_icon_black.svg",
+        "ageLimitName": "12 éven aluliak számára a megtekintése nagykorú felügyelete mellett ajánlott",
+        "category": "dokumentumfilm"
+    },
+    "type": "evening"
+}

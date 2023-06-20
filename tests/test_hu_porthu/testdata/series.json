@@ -1,0 +1,43 @@
+{
+    "id": "event-tv-1159526715-194",
+    "start_datetime": "2023-02-09T00:25:00+01:00",
+    "start_time": "00:25",
+    "start_ts": 1675898700,
+    "end_time": "00:55",
+    "end_datetime": "2023-02-09T00:55:00+01:00",
+    "is_child_event": false,
+    "title": "South Park",
+    "sound_quality": null,
+    "italics": null,
+    "episode_title": "Gluténmentes ebola",
+    "description": null,
+    "short_description": "amerikai animációs sorozat, XVIII / 2. rész",
+    "highlight": null,
+    "is_repeat": false,
+    "is_live_mp": false,
+    "is_overlapping": false,
+    "film_id": "movie-18285",
+    "film_url": "/adatlap/sorozat/tv/south-park/glutenmentes-ebola/event-tv-1159526715-194/episode-317219",
+    "favorite_url": null,
+    "del_calendar_url": null,
+    "has_reminder": false,
+    "show_reminder": false,
+    "is_notified": false,
+    "show_notification": false,
+    "media_url": null,
+    "media": null,
+    "has_video": false,
+    "attributes_text": "",
+    "outer_links": {
+        "film_outer_link": null,
+        "watch_movie_link": null,
+        "extra_link": null
+    },
+    "restriction": {
+        "age_limit": 18,
+        "ageLimitImage": "/img/agelimit/vector/18_age_icon_black.svg",
+        "ageLimitName": "18 éven aluliak számára nem ajánlott",
+        "category": "filmsorozat"
+    },
+    "type": "past"
+}
