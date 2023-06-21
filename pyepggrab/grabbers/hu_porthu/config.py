@@ -1,7 +1,5 @@
 """Classes used in the configuration file."""
 
-# from __future__ import annotations
-
 from dataclasses import asdict, dataclass
 from typing import List, Type
 
