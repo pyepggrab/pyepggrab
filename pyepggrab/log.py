@@ -7,7 +7,7 @@ are not finalized to avoid outputting unwanted log messages.
 
 import logging
 import sys
-from typing import Dict, List, Union
+from typing import ClassVar, Dict, List, Union
 
 from .utils import grabber_name
 
@@ -15,9 +15,9 @@ from .utils import grabber_name
 class Log:
     """Logger of pyepggrab."""
 
-    _finalized: bool = False
-    _delayedlogs: Dict[str, List[logging.LogRecord]] = {}
-    _managed_loggers: List[logging.Logger] = []
+    _finalized: ClassVar[bool] = False
+    _delayedlogs: ClassVar[Dict[str, List[logging.LogRecord]]] = {}
+    _managed_loggers: ClassVar[List[logging.Logger]] = []
 
     @classmethod
     def disable_loggers(cls) -> None:

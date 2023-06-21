@@ -20,7 +20,7 @@ still want to do, use this as a reference).
 import sys
 from argparse import Namespace
 from json import JSONDecoder, JSONEncoder
-from typing import Callable, List, NoReturn, Optional, Type
+from typing import Callable, ClassVar, List, NoReturn, Optional, Type
 
 from pyepggrab import __about__
 from pyepggrab.configbase import ConfigEncoder, ConfigRootBase, T
@@ -35,9 +35,9 @@ MainType = Callable[[Namespace, ConfigManager], Optional[int]]
 class Pyepggrab:
     """Pyepggrab convenience functions and decorators."""
 
-    _grabber_main: Optional[MainType] = None
-    _grabber_config: Optional[MainType] = None
-    _grabber_extraargs: Optional[ExtraargsType] = None
+    _grabber_main: ClassVar[Optional[MainType]] = None
+    _grabber_config: ClassVar[Optional[MainType]] = None
+    _grabber_extraargs: ClassVar[Optional[ExtraargsType]] = None
 
     @classmethod
     def grabber_main(cls, func: MainType) -> MainType:

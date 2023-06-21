@@ -176,8 +176,7 @@ def build_subtitle(  # noqa: PLR0913
     subt = append_if_not_empty(subt, ", ", release_date)
     if subt not in (None, ""):
         subt = f"({subt})"
-    subt = append_if_not_empty(episode_title, " - ", subt)
-    return subt
+    return append_if_not_empty(episode_title, " - ", subt)
 
 
 def create_xprogramme(  # noqa: PLR0912, PLR0915
