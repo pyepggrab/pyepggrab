@@ -12,7 +12,11 @@ from fake_useragent import UserAgent  # type: ignore[import]
 
 from pyepggrab.ask import ask_boolean, ask_many_boolean
 from pyepggrab.configmanager import ConfigManager
-from pyepggrab.grabbers.hu_porthu.config import Channel, GrabberConfig
+from pyepggrab.grabbers.hu_porthu.config import (
+    Channel,
+    GrabberConfig,
+    GrabberConfigEncoder,
+)
 from pyepggrab.grabbers.hu_porthu.request_proc import ProcessCtx
 from pyepggrab.grabbers.hu_porthu.utils import (
     INIT_URL,
@@ -499,6 +503,7 @@ def run(**kwargs) -> NoReturn:
         description=GRABBER_DESCRIPTION,
         caps=GRABBER_CAPABILITIES,
         config_root=GrabberConfig,
+        config_encoder=GrabberConfigEncoder,
         **kwargs,
     )
 

@@ -1,9 +1,11 @@
 """Classes used in the configuration file."""
 
 from dataclasses import asdict, dataclass
-from typing import List, Type
+from json import JSONEncoder
+from typing import Any, List, Type
 
 from pyepggrab.configbase import ConfigBase, ConfigRootBase, T
+from pyepggrab.utils import remove_suffix
 
 try:
     from typing import override  # type: ignore # noqa: F401, RUF100
@@ -22,7 +24,7 @@ class Channel(ConfigBase):
     @override
     @classmethod
     def from_dict(cls: Type[T], d: dict) -> "Channel":
-        id_ = d.get("id", "")
+        id_ = d.get("id", "")  # Stored without '_' in config
         name = d.get("name", "")
         enabled = d.get("enabled", False)
         return Channel(id_, name, enabled)
@@ -40,3 +42,12 @@ class GrabberConfig(ConfigRootBase):
         channels = [Channel.from_dict(ch) for ch in d.get("channels", [])]
         conf = ConfigRootBase.from_dict(d)
         return GrabberConfig(**asdict(conf), channels=channels)
+
+
+class GrabberConfigEncoder(JSONEncoder):
+    """Save every member variable of the class, but without the '_' suffixes."""
+
+    @override
+    def default(self, o: Any) -> dict:
+        """Encode keys without '_' suffixes."""
+        return {remove_suffix(k, "_"): v for k, v in vars(o).items()}
