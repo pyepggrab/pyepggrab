@@ -3,8 +3,6 @@
 These also provides the default config functionality
 """
 
-# from __future__ import annotations
-
 from dataclasses import dataclass
 from json import JSONEncoder
 from typing import Any, Dict, Type, TypeVar
@@ -45,5 +43,4 @@ class ConfigEncoder(JSONEncoder):
 
     @override
     def default(self, o: Any) -> dict:
-        ConfigRootBase.from_dict({})
         return vars(o)
