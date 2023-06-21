@@ -13,20 +13,45 @@ To avoid name conflicts, pyepggrab grabbers use the prefix `tv_grab_pyepg_`.
 
 ## Installation
 
-Currently, there are no premade packages available, but this expected to change
-in the future.
-
 If the functionality of `tv_find_grabbers` is required the one in the
 original [XMLTV][xmltv] project can be used until we provide an alternative.
 (On the [Roadmap](#roadmap))
 
+### From package
+
+pyepggrab is available on PyPi: https://pypi.org/project/pyepggrab/
+
+Install it with your preferred package manager.
+
+For example, with `pip`
+```
+pip install pyepggrab
+```
+
+or with `pipx`
+```
+pipx install pyepggrab
+```
+
+### From source
+
 To install from source, create a wheel package (this requires `hatch`):
 
-> `hatch build`
+```
+hatch build
+```
 
-and install it with your preferred package manager (`pipx` in the example):
+and install it with your preferred package manager.
 
-> `pipx install dist/pyepggrab-*.whl`
+For example, with `pip`
+```
+pip install dist/pyepggrab-*.whl
+```
+
+or with `pipx`
+```
+pipx install dist/pyepggrab-*.whl
+```
 
 ## Available grabbers:
 
@@ -41,7 +66,7 @@ and install it with your preferred package manager (`pipx` in the example):
 
 In no particular order
 
-- [ ] Upload a package to PyPi
+- [x] Upload a package to PyPi
 - [ ] Write an example grabber to demonstrate the usage of pyepggrab
 - [ ] Write tools to make it standalone (`tv_find_grabbers`, `tv_validate_*`)
 
