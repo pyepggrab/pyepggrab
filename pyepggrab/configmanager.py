@@ -51,8 +51,7 @@ class ConfigManager(Generic[T]):
         if path:
             self._path = Path(path)
         else:
-            confname = Path(sys.argv[0]).stem + ".conf"
-            self._path = Path(Path.home(), ".xmltv", confname)
+            self._path = self.get_default_config_path()
 
     def get_config_path(self) -> Path:
         """Return the path to the config file."""
@@ -73,3 +72,21 @@ class ConfigManager(Generic[T]):
         configstr = json.dumps(config, cls=self._encoder, indent=2, ensure_ascii=False)
         with self._path.open("w", encoding="UTF-8") as file:
             file.write(configstr)
+
+    @staticmethod
+    def get_default_config_directory() -> Path:
+        """Get the default configuration directory."""
+        return Path(Path.home(), ".xmltv")
+
+    @staticmethod
+    def get_default_config_name() -> str:
+        """Get the default configuration file name."""
+        return Path(sys.argv[0]).stem + ".conf"
+
+    @classmethod
+    def get_default_config_path(cls) -> Path:
+        """Get the default configuration path (dir+name)."""
+        return Path(
+            cls.get_default_config_directory(),
+            cls.get_default_config_name(),
+        )
