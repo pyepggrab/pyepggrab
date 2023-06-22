@@ -421,8 +421,24 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
 
     Called by pyepggrab
     """
-    argp.add_argument("--slow", action="store_true")
-    argp.add_argument("--jobs", type=int, default=1)
+    argp.add_argument(
+        "--slow",
+        action="store_true",
+        help=(
+            "Use a significantly slower, but more detailed mode to download the guide. "
+            "This adds information like description, actors, etc"
+        ),
+    )
+    argp.add_argument(
+        "--jobs",
+        type=int,
+        default=1,
+        help=(
+            "Number of parallel processes used to download the guide. "
+            "Only used in --slow mode. Setting this value too high may result in "
+            "high resource usage and/or getting banned from port.hu"
+        ),
+    )
 
 
 @Pyepggrab.grabber_main
