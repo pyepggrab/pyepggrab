@@ -11,6 +11,7 @@ import sys
 from typing import Callable, List, Optional, Sequence
 
 from pyepggrab import __about__
+from pyepggrab.configmanager import ConfigManager
 from pyepggrab.log import Log
 
 ExtraargsType = Callable[[argparse.ArgumentParser], None]
@@ -40,15 +41,26 @@ class ArgParser:
 
         self.parser = argparse.ArgumentParser()
         prs = self.parser
-        prs.add_argument("--pyepggrabver", action="store_true")
+        prs.add_argument(
+            "--pyepggrabver",
+            action="store_true",
+            help="Show the version of pyepggrab (not the grabber)",
+        )
 
-        prs.add_argument("-l", "--loglevel", dest="loglevel", default=logging.WARNING)
+        prs.add_argument(
+            "-l",
+            "--loglevel",
+            dest="loglevel",
+            default=logging.WARNING,
+            help="Set logging level. FATAL, ERROR, WARNING, INFO, DEBUG",
+        )
         prs.add_argument(
             "-d",
             "--debug",
             action="store_const",
             dest="loglevel",
             const=logging.DEBUG,
+            help="DEBUG logging level. Same as -l DEBUG",
         )
         prs.add_argument(
             "-v",
@@ -56,23 +68,68 @@ class ArgParser:
             action="store_const",
             dest="loglevel",
             const=logging.INFO,
+            help="INFO logging level. Same as -l INFO",
         )
 
         # XMLTV
-        prs.add_argument("-q", "--quiet", action="store_true")
-        prs.add_argument("--version", action="store_true")
-        prs.add_argument("--description", dest="desc", action="store_true")
-        prs.add_argument("--capabilities", action="store_true")
+        prs.add_argument(
+            "-q",
+            "--quiet",
+            action="store_true",
+            help="Silence any logging output",
+        )
+        prs.add_argument(
+            "--version",
+            action="store_true",
+            help="Display the grabber version",
+        )
+        prs.add_argument(
+            "--description",
+            dest="desc",
+            action="store_true",
+            help="Display the grabber description",
+        )
+        prs.add_argument(
+            "--capabilities",
+            action="store_true",
+            help="Display the grabber capabilities",
+        )
 
         if "baseline" in caps:
             # --quiet should be here but it's provided by default
-            prs.add_argument("--output")
-            prs.add_argument("--days", type=int)
-            prs.add_argument("--offset", type=int, default=0)
-            prs.add_argument("--config-file")
+            prs.add_argument("--output", help="Set the output xml location")
+            prs.add_argument(
+                "--days",
+                type=int,
+                help="Number of days to include in the output. (max)",
+            )
+            prs.add_argument(
+                "--offset",
+                type=int,
+                default=0,
+                help=(
+                    "Include days after the first n days. "
+                    "0 means today, nothing skipped"
+                ),
+            )
+            prs.add_argument(
+                "--config-file",
+                help=(
+                    "Location of the config file. "
+                    f"Default is '{ConfigManager.get_default_config_path()}'"
+                ),
+            )
 
         if "manualconfig" in caps:
-            prs.add_argument("--configure", action="store_true")
+            prs.add_argument(
+                "--configure",
+                action="store_true",
+                help=(
+                    "Start the grabber in configuraion mode. "
+                    "If the --config-file parameter supported, "
+                    "the configuration saved there"
+                ),
+            )
 
         if extraargs_cb:
             extraargs_cb(prs)
