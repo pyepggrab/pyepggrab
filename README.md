@@ -67,7 +67,7 @@ pipx install dist/pyepggrab-*.whl
 In no particular order
 
 - [x] Upload a package to PyPi
-- [ ] Write an example grabber to demonstrate the usage of pyepggrab
+- [x] Write an example grabber to demonstrate the usage of pyepggrab (see [example](example) directory)
 - [ ] Write tools to make it standalone (`tv_find_grabbers`, `tv_validate_*`)
 
 [xmltv]: https://github.com/XMLTV/xmltv
