@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Generic, Optional, Type
 
 from pyepggrab.configbase import ConfigEncoder, ConfigRootBase, T
+from pyepggrab.log import Log
 
 
 class ConfigManager(Generic[T]):
@@ -64,6 +65,7 @@ class ConfigManager(Generic[T]):
     def read_config(self) -> T:
         """Read the config file and return the contents as `root` type."""
         with self._path.open("r", encoding="UTF-8") as file:
+            Log.get_pyepggrab_logger().debug("Reading config file %s", self._path)
             conf = json.load(file, cls=self._decoder)
             return self._root.from_dict(conf)
 
@@ -71,6 +73,7 @@ class ConfigManager(Generic[T]):
         """Write the `root` type config to the config file."""
         configstr = json.dumps(config, cls=self._encoder, indent=2, ensure_ascii=False)
         with self._path.open("w", encoding="UTF-8") as file:
+            Log.get_pyepggrab_logger().debug("Writing config file %s", self._path)
             file.write(configstr)
 
     @staticmethod
