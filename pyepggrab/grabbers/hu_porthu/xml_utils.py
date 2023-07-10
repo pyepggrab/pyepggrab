@@ -41,8 +41,8 @@ from pyepggrab.xmltv import (
 )
 
 RE_JSONDESC = re.compile(
-    r"^(?P<countries>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű-]+)? ?"
-    r"(?:(?:(?<= )|^)(?P<categories>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű, -]+)(?:, |$))?"
+    r"^(?P<countries>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű -]+)?"
+    r"(?:(?: |^)(?P<categories>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű, -]+)(?:, |$))?"
     r"(?:(?:(?<=, )|^)(?P<season>[IVXLCDM]+)(?: / ))?"
     r"(?:(?P<episode>[0-9]+)\. rész)?(?:, )?"
     r"(?P<year>[0-9]{4})?$",
@@ -50,11 +50,24 @@ RE_JSONDESC = re.compile(
 """`countries` captures the first part of the `categories` if no country present
 because it's impossible to distinguish between a county name and a category name
 
-example:
+`countries` also captures the first part of the `categories` if the first
+category contains space
+
+example 1:
 
 angol tévéfilmsorozat, IV / 15. rész -> angol | tévéfilmsorozat | IV | 15
 
 talk show, I / 9. rész -> talk | show | I | 9
+
+example 2:
+
+török romantikus vígjáték , I / 13. rész -> török romantikus | vígjáték  | I | 13
+                         ^ extra space came from port.hu
+
+example 3:
+
+venezuelai-amerikai-Puerto Rico-i filmsorozat, 230. rész ->
+    venezuelai-amerikai-Puerto Rico-i | filmsorozat | 230
 
 if the `countries` can be categorized then it's a category not a country
 """
