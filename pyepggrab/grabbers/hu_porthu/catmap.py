@@ -281,7 +281,7 @@ CATDICT = {
     "romantikus komédia": Cat.COMEDY,
     "romantikus sorozat": Cat.ROMANCE,
     "romantikus thriller": Cat.DETECTIVE_THRILLER,
-    "romantikus vígjáték ": Cat.COMEDY,
+    "romantikus vígjáték": Cat.COMEDY,
     "rövidfilm": Cat.MOVIE_DRAMA,
     "rövidfilm összeállítás": Cat.MOVIE_DRAMA,
     "rövidfilmsorozat": Cat.MOVIE_DRAMA,
