@@ -185,7 +185,7 @@ def check_expected_channels(
 
 
 def extract_channel_prog(ch: Dict) -> List[Dict]:
-    """Extract the list of programs on a chennel from the port.hu api json."""
+    """Extract the list of programs on a channel from the port.hu api json."""
     ret_json: List[Dict] = []
     prog: dict
     for prog in ch["programs"]:
@@ -193,20 +193,20 @@ def extract_channel_prog(ch: Dict) -> List[Dict]:
     return ret_json
 
 
-def add_new_progs(progjsons: List[dict], exceptedday: date, ch: dict) -> None:
+def add_new_progs(progjsons: List[dict], expectedday: date, ch: dict) -> None:
     """Add new programs on `ch` to `progjsons` if they are on the `expectedday`."""
     log = Log.get_grabber_logger()
 
     for progjson in extract_channel_prog(ch):
         if "start_datetime" in progjson:
             start_date = datetime.fromisoformat(progjson["start_datetime"]).date()
-            if start_date == exceptedday:
+            if start_date == expectedday:
                 progjsons.append(progjson)
             else:
                 log.debug(
                     "Program start time is outside of the day. "
                     "Skipped. day: %s, program: %s (%s) - %s",
-                    str(exceptedday),
+                    str(expectedday),
                     str(progjson["title"]),
                     str(progjson["id"]),
                     str(progjson["start_datetime"]),
@@ -446,7 +446,7 @@ def main(
     args: argparse.Namespace,
     confman: ConfigManager[GrabberConfig],
 ) -> Optional[int]:
-    """Start graber in normal operation (not configuring).
+    """Start grabber in normal operation (not configuring).
 
     Called by pyepggrab
     """
@@ -513,7 +513,7 @@ def main(
 
 
 def run(**kwargs) -> NoReturn:
-    """Entrypoint to start the grabber by calling `pyepggrab_main()`."""
+    """Entrypoint to start the grabber by calling `Pyepggrab.main()`."""
     Pyepggrab.main(
         version=GRABBER_VERSION,
         description=GRABBER_DESCRIPTION,

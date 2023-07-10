@@ -56,7 +56,7 @@ angol tévéfilmsorozat, IV / 15. rész -> angol | tévéfilmsorozat | IV | 15
 
 talk show, I / 9. rész -> talk | show | I | 9
 
-if the `countres` can be categorized then it's a category not a country
+if the `countries` can be categorized then it's a category not a country
 """
 
 RE_DESC_TAG = re.compile(r"<div class=\"description\">([\s\S]+?)</div>")
