@@ -1,6 +1,6 @@
 import pathlib
 import unittest
-from datetime import date
+from datetime import datetime
 
 from lxml import etree
 
@@ -52,6 +52,11 @@ from pyepggrab.xmltv import (
     XmltvWriter,
     to_xmltv_date,
 )
+
+try:
+    from zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
+except ImportError:
+    from backports.zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
 
 DTD = pathlib.Path(__file__).parent.parent.parent.joinpath(
     "pyepggrab/resources/xmltv.dtd",
@@ -611,7 +616,9 @@ tvfulltree = XmltvTv(
                     ),
                 ],
             ),
-            date=XmltvDate(to_xmltv_date(date(1990, 1, 2))),
+            date=XmltvDate(
+                to_xmltv_date(datetime(1990, 1, 2, 3, 4, 5, tzinfo=ZoneInfo("UTC"))),
+            ),
             categories=[
                 XmltvCategory(category="cat1", lang="en"),
                 XmltvCategory(category="cat2", lang="jp"),
@@ -1206,7 +1213,9 @@ tvfulltree = XmltvTv(
                     ),
                 ],
             ),
-            date=XmltvDate(to_xmltv_date(date(1990, 1, 2))),
+            date=XmltvDate(
+                to_xmltv_date(datetime(1990, 1, 2, 3, 4, 5, tzinfo=ZoneInfo("UTC"))),
+            ),
             categories=[
                 XmltvCategory(category="cat1", lang="en"),
                 XmltvCategory(category="cat2", lang="jp"),
