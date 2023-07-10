@@ -1,0 +1,43 @@
+{
+    "id": "event-tv-1273317596-304",
+    "start_datetime": "2023-07-10T15:50:00+02:00",
+    "start_time": "15:50",
+    "start_ts": 1688997000,
+    "end_time": "16:55",
+    "end_datetime": "2023-07-10T16:55:00+02:00",
+    "is_child_event": false,
+    "title": "Vadmacska",
+    "sound_quality": null,
+    "italics": null,
+    "episode_title": null,
+    "description": null,
+    "short_description": "venezuelai-amerikai-Puerto Rico-i filmsorozat, 230. rész",
+    "highlight": null,
+    "is_repeat": false,
+    "is_live_mp": false,
+    "is_overlapping": false,
+    "film_id": "movie-55260",
+    "film_url": "/adatlap/film/tv/vadmacska-la-gata-salvaje/event-tv-1273317596-304/episode-108551",
+    "favorite_url": null,
+    "del_calendar_url": null,
+    "has_reminder": false,
+    "show_reminder": false,
+    "is_notified": false,
+    "show_notification": false,
+    "media_url": null,
+    "media": null,
+    "has_video": false,
+    "attributes_text": "",
+    "outer_links": {
+        "film_outer_link": null,
+        "watch_movie_link": null,
+        "extra_link": null
+    },
+    "restriction": {
+        "age_limit": 12,
+        "ageLimitImage": "/img/agelimit/vector/12_age_icon_black.svg",
+        "ageLimitName": "12 éven aluliak számára a megtekintése nagykorú felügyelete mellett ajánlott",
+        "category": "filmsorozat"
+    },
+    "type": "past"
+}
