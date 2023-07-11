@@ -118,7 +118,7 @@ def match_categories(cats: List[str]) -> List[XmltvCategory]:
             hucats.append(XmltvCategory(CATDICT[cat].value[1], "hu"))
         # TODO: elif try to match unknown catergory
         else:
-            log.warning("Unknown category: %s", cat)
+            log.warning("Unknown category: '%s'", cat)
 
         # try to match mythtv category if not already
         if mythcat is None:
@@ -349,6 +349,10 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             ]
             and j_short_desc is not None
         ):
+            # Sometimes there is a leading space before the comma
+            # and causes incorrect matches
+            j_short_desc = j_short_desc.replace(" , ", ", ")
+
             match = RE_JSONDESC.search(j_short_desc)
             if match and len(match.group(0)) > 0:
                 j_re_countries = match.group("countries")
@@ -362,12 +366,10 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
                 # if not decrease the number of parts.
                 # Search is stopped after the first successful match
 
-                # strip()-ing is necessary because sometimes there are
-                # unnecessary whitespace around strings on port.hu.
                 j_re_country_splits = (
-                    j_re_countries.strip().split(" ") if j_re_countries else ""
+                    j_re_countries.split(" ") if j_re_countries else ""
                 )
-                cat_str = j_re_categories.strip() if j_re_categories else ""
+                cat_str = j_re_categories if j_re_categories else ""
 
                 for i in range(len(j_re_country_splits)):
                     concat_country = " ".join(j_re_country_splits[i:])
