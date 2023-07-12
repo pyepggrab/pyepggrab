@@ -350,8 +350,9 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             and j_short_desc is not None
         ):
             # Sometimes there is a leading space before the comma
-            # and causes incorrect matches
-            j_short_desc = j_short_desc.replace(" , ", ", ")
+            # or trailing space if the categories are on the end.
+            # Causes incorrect matches
+            j_short_desc = j_short_desc.replace(" , ", ", ").strip()
 
             match = RE_JSONDESC.search(j_short_desc)
             if match and len(match.group(0)) > 0:
