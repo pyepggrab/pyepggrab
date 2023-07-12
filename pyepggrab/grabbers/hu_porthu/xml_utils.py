@@ -250,6 +250,12 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
         # From json-ld data
         # jld_desc = page_jsonld.get("description")
         jld_genre = page_jsonld.get("genre")
+        if jld_genre:
+            # Sometimes there is a leading space before the comma
+            # or trailing space after the last category.
+            # Causes failed category matches.
+            jld_genre = jld_genre.replace(" , ", ", ").strip()
+
         jld_episode_num = page_jsonld.get("episodeNumber")
         jld_season_num = page_jsonld.get("partOfSeason", {}).get("seasonNumber")
 
