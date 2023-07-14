@@ -112,6 +112,15 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertEqual(str(parse_movie), str(xprog[0]))
             self.assertEqual(parse_movie, xprog[0])
 
+    def test_space_in_country_name(self) -> None:
+        with TESTDATADIR.joinpath("space_country.json").open(encoding="UTF-8") as file:
+            jdata = json.load(file)
+            xprog = hu_porthu.create_xprogramme([jdata], None)
+
+            self.assertEqual(1, len(xprog))
+            self.assertEqual(str(space_country), str(xprog[0]))
+            self.assertEqual(space_country, xprog[0])
+
 
 daystart_dayend_channels = [
     XmltvChannel(
@@ -674,6 +683,39 @@ parse_movie = XmltvProgramme(
             "port.hu",
         ),
     ],
+    ratings=[
+        XmltvRating(
+            value=XmltvValue("12"),
+            icons=[
+                XmltvIcon("https://port.hu/img/agelimit/raster/12_age_icon_black.png"),
+            ],
+        ),
+    ],
+)
+
+space_country = XmltvProgramme(
+    start="20230710155000 +0200",
+    stop="20230710165500 +0200",
+    channel="304.port.hu",
+    titles=[XmltvTitle("Vadmacska")],
+    sub_titles=[
+        XmltvSubTitle(
+            "(venezuelai-amerikai-Puerto Rico-i filmsorozat, 230. rész)",
+            "hu",
+        ),
+    ],
+    categories=[
+        XmltvCategory("Movie/Drama", "en"),
+        XmltvCategory("Film/Dráma", "hu"),
+        XmltvCategory("series", "en"),
+    ],
+    urls=[
+        XmltvUrl(
+            "https://port.hu/adatlap/film/tv/vadmacska-la-gata-salvaje/event-tv-1273317596-304/episode-108551",
+            "port.hu",
+        ),
+    ],
+    episode_nums=[XmltvEpisodeNum(".229.0/1", "xmltv_ns")],
     ratings=[
         XmltvRating(
             value=XmltvValue("12"),

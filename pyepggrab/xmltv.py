@@ -20,9 +20,9 @@ GEN_NAME = Path(sys.argv[0]).stem
 GEN_URL = "https://github.com/pyepggrab/pyepggrab"
 
 
-def to_xmltv_date(date: datetime.date) -> str:
-    """`date` to XMLTV date format."""
-    return date.strftime("%Y%m%d%H%M%S %z")
+def to_xmltv_date(datetime: datetime.datetime) -> str:
+    """`datetime` to XMLTV date format."""
+    return datetime.strftime("%Y%m%d%H%M%S %z")
 
 
 @dataclass(eq=True)

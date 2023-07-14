@@ -125,7 +125,7 @@ class ArgParser:
                 "--configure",
                 action="store_true",
                 help=(
-                    "Start the grabber in configuraion mode. "
+                    "Start the grabber in configuration mode. "
                     "If the --config-file parameter supported, "
                     "the configuration saved there"
                 ),

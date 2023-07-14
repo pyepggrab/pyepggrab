@@ -41,8 +41,8 @@ from pyepggrab.xmltv import (
 )
 
 RE_JSONDESC = re.compile(
-    r"^(?P<countries>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű-]+)? ?"
-    r"(?:(?:(?<= )|^)(?P<categories>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű, -]+)(?:, |$))?"
+    r"^(?P<countries>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű -]+)?"
+    r"(?:(?: |^)(?P<categories>[A-Za-zÁáÉéÍíÓóÖöŐőÚúÜüŰű, -]+)(?:, |$))?"
     r"(?:(?:(?<=, )|^)(?P<season>[IVXLCDM]+)(?: / ))?"
     r"(?:(?P<episode>[0-9]+)\. rész)?(?:, )?"
     r"(?P<year>[0-9]{4})?$",
@@ -50,13 +50,26 @@ RE_JSONDESC = re.compile(
 """`countries` captures the first part of the `categories` if no country present
 because it's impossible to distinguish between a county name and a category name
 
-example:
+`countries` also captures the first part of the `categories` if the first
+category contains space
+
+example 1:
 
 angol tévéfilmsorozat, IV / 15. rész -> angol | tévéfilmsorozat | IV | 15
 
 talk show, I / 9. rész -> talk | show | I | 9
 
-if the `countres` can be categorized then it's a category not a country
+example 2:
+
+török romantikus vígjáték , I / 13. rész -> török romantikus | vígjáték  | I | 13
+                         ^ extra space came from port.hu
+
+example 3:
+
+venezuelai-amerikai-Puerto Rico-i filmsorozat, 230. rész ->
+    venezuelai-amerikai-Puerto Rico-i | filmsorozat | 230
+
+if the `countries` can be categorized then it's a category not a country
 """
 
 RE_DESC_TAG = re.compile(r"<div class=\"description\">([\s\S]+?)</div>")
@@ -105,7 +118,7 @@ def match_categories(cats: List[str]) -> List[XmltvCategory]:
             hucats.append(XmltvCategory(CATDICT[cat].value[1], "hu"))
         # TODO: elif try to match unknown catergory
         else:
-            log.warning("Unknown category: %s", cat)
+            log.warning("Unknown category: '%s'", cat)
 
         # try to match mythtv category if not already
         if mythcat is None:
@@ -237,6 +250,12 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
         # From json-ld data
         # jld_desc = page_jsonld.get("description")
         jld_genre = page_jsonld.get("genre")
+        if jld_genre:
+            # Sometimes there is a leading space before the comma
+            # or trailing space after the last category.
+            # Causes failed category matches.
+            jld_genre = jld_genre.replace(" , ", ", ").strip()
+
         jld_episode_num = page_jsonld.get("episodeNumber")
         jld_season_num = page_jsonld.get("partOfSeason", {}).get("seasonNumber")
 
@@ -336,6 +355,11 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             ]
             and j_short_desc is not None
         ):
+            # Sometimes there is a leading space before the comma
+            # or trailing space if the categories are on the end.
+            # Causes incorrect matches
+            j_short_desc = j_short_desc.replace(" , ", ", ").strip()
+
             match = RE_JSONDESC.search(j_short_desc)
             if match and len(match.group(0)) > 0:
                 j_re_countries = match.group("countries")
@@ -344,15 +368,28 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
                 j_re_episode = match.group("episode")
                 j_re_year = match.group("year")
 
-                # country may be the first part of the category, not a country
-                if j_re_countries and is_category(
-                    f"{j_re_countries} {j_re_categories}".split(", ")[0],
-                ):
-                    if j_re_categories:
-                        j_re_categories = f"{j_re_countries} {j_re_categories}"
-                    else:
-                        j_re_categories = j_re_countries
-                    j_re_countries = None
+                # Country may be the first part of the category, not a country.
+                # First try all parts of the country to see if is a category
+                # if not decrease the number of parts.
+                # Search is stopped after the first successful match
+
+                j_re_country_splits = (
+                    j_re_countries.split(" ") if j_re_countries else ""
+                )
+                cat_str = j_re_categories if j_re_categories else ""
+
+                for i in range(len(j_re_country_splits)):
+                    concat_country = " ".join(j_re_country_splits[i:])
+                    if is_category(
+                        f"{concat_country} {cat_str}".rstrip().split(", ")[0],
+                    ):
+                        if j_re_categories:
+                            j_re_categories = f"{concat_country} {cat_str}"
+                        else:
+                            j_re_categories = concat_country
+                        j_re_countries = " ".join(j_re_country_splits[:i])
+
+                        break
 
         j_episode_title = progjson.get("episode_title")
         j_porturl = progjson.get("film_url")
