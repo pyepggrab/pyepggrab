@@ -8,7 +8,6 @@ from math import floor
 from typing import Dict, List, NoReturn, Optional, Tuple
 
 import requests
-from fake_useragent import UserAgent  # type: ignore[import]
 
 from pyepggrab.ask import ask_boolean, ask_many_boolean
 from pyepggrab.configmanager import ConfigManager
@@ -61,7 +60,6 @@ def get_simple_channel_list() -> List[dict]:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
 
     rsp = sess.get(INIT_URL)
     if rsp.status_code == requests.codes.OK:
@@ -259,7 +257,7 @@ def get_api_limits() -> ApiLimits:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
+
     response = sess.get(INIT_URL)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
@@ -306,7 +304,7 @@ def retrieve_guide(
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
+    
     dateformat = "%Y-%m-%d"
     date_from = datetime.now(ZoneInfo("Europe/Budapest")).date() + timedelta(
         days=offset,

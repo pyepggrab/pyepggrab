@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import requests
-from fake_useragent import UserAgent  # type: ignore[import]
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
@@ -55,7 +54,6 @@ class ProcessCtx:
 
         rsp = cls.session.get(
             to_absolute_porturl(url),
-            headers={"User-Agent": UserAgent().random},
         )
         if rsp.status_code == requests.codes.OK:
             return ProcResult(create_xprogramme(json, rsp))
