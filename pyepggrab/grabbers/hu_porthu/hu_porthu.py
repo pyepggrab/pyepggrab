@@ -419,6 +419,8 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
 
     Called by pyepggrab
     """
+    argp.formatter_class = argparse.ArgumentDefaultsHelpFormatter
+
     argp.add_argument(
         "--slow",
         action="store_true",
