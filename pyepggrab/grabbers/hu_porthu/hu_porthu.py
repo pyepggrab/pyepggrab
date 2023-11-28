@@ -51,6 +51,18 @@ class ApiLimits:
     channels: List[Channel]
 
 
+@dataclass
+class RetriveOptions:
+    """Options to configure the retriving process."""
+
+    days: int
+    offset: int
+    slow: bool
+    jobs: int
+    ratelimit: int
+    interval: int
+
+
 def get_simple_channel_list() -> List[dict]:
     """Return the list of channels that currently supported."""
     sess = requests.session()
@@ -83,10 +95,7 @@ def build_url_map(progjsons: List[Dict]) -> Dict[Optional[str], List[Dict]]:
 
 def fetch_prog_info(
     jsons: List[Dict],
-    slow: bool,
-    jobs: int,
-    ratelimit: int,
-    interval: int,
+    options: RetriveOptions,
 ) -> List[XmltvProgramme]:
     """Fetch program informations and create XMLTV Programme from them.
 
@@ -97,7 +106,7 @@ def fetch_prog_info(
     progs: List[XmltvProgramme] = []
     log = Log.get_grabber_logger()
 
-    if slow:
+    if options.slow:
         progmap = build_url_map(jsons)
 
         log.debug("Using slow mode")
@@ -116,9 +125,9 @@ def fetch_prog_info(
         log.debug("Downloading details and generating programs")
         url, progjsons = zip(*[(k, v) for k, v in progmap.items() if k])
         with ProcessPoolExecutor(
-            max_workers=jobs,
+            max_workers=options.jobs,
             initializer=ProcessCtx.init_context,
-            initargs=(ratelimit, interval),
+            initargs=(options.ratelimit, options.interval),
         ) as ppe:
             for result in ppe.map(ProcessCtx.gen_programs, url, progjsons):
                 if result.error:
@@ -264,7 +273,7 @@ def get_api_limits() -> ApiLimits:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    
+
     response = sess.get(INIT_URL)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
@@ -287,15 +296,7 @@ def get_api_limits() -> ApiLimits:
     return ApiLimits(valid, days, channels)
 
 
-def retrieve_guide(
-    chan_ids: List[str],
-    days: int = 0,
-    offset: int = 0,
-    slow: bool = False,
-    jobs: int = 1,
-    ratelimit: int = 1,
-    interval: int = 1,
-) -> XmltvTv:
+def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
     """Retrieve guide from port.hu api.
 
     :param chan_ids: channel ids to be retrieved (port.hu id format (tvchannel-*))
@@ -313,13 +314,13 @@ def retrieve_guide(
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    
+
     dateformat = "%Y-%m-%d"
     date_from = datetime.now(ZoneInfo("Europe/Budapest")).date() + timedelta(
-        days=offset,
+        days=options.offset,
     )
     # date_from = date.today() + timedelta(days=offset)
-    date_to = date_from + timedelta(days=days)
+    date_to = date_from + timedelta(days=options.days)
 
     log.info(
         "retrieving programs from %s to %s for %d channel(s)",
@@ -347,7 +348,7 @@ def retrieve_guide(
     tv = XmltvTv()
     if len(progjsons) > 0:
         try:
-            progs = fetch_prog_info(progjsons, slow, jobs, ratelimit, interval)
+            progs = fetch_prog_info(progjsons, options)
             tv.channels = list(channels.values())
             tv.programmes = progs
         except Exception:
@@ -553,12 +554,14 @@ def main(
 
     guide = retrieve_guide(
         enabled_ch_portids,
-        days,
-        args.offset,
-        args.slow,
-        args.jobs,
-        args.ratelimit,
-        args.interval,
+        RetriveOptions(
+            days,
+            args.offset,
+            args.slow,
+            args.jobs,
+            args.ratelimit,
+            args.interval,
+        ),
     )
     writexml(guide, args.output)
     return 0

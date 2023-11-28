@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import requests
-from pyrate_limiter import Limiter, RequestRate
-from requests_ratelimiter import LimiterSession
+from pyrate_limiter import Limiter, RequestRate  # type: ignore[import]
+from requests_ratelimiter import LimiterSession  # type: ignore[import]
 
 from pyepggrab.grabbers.hu_porthu.utils import BASE_URL, to_absolute_porturl
 from pyepggrab.grabbers.hu_porthu.xml_utils import create_xprogramme
