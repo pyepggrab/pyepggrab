@@ -81,7 +81,13 @@ def build_url_map(progjsons: List[Dict]) -> Dict[Optional[str], List[Dict]]:
     return progmap
 
 
-def fetch_prog_info(jsons: List[Dict], slow: bool, jobs: int) -> List[XmltvProgramme]:
+def fetch_prog_info(
+    jsons: List[Dict],
+    slow: bool,
+    jobs: int,
+    ratelimit: int,
+    interval: int,
+) -> List[XmltvProgramme]:
     """Fetch program informations and create XMLTV Programme from them.
 
     :param jsons: programs returned by port.hu api in json format
@@ -112,6 +118,7 @@ def fetch_prog_info(jsons: List[Dict], slow: bool, jobs: int) -> List[XmltvProgr
         with ProcessPoolExecutor(
             max_workers=jobs,
             initializer=ProcessCtx.init_context,
+            initargs=(ratelimit, interval),
         ) as ppe:
             for result in ppe.map(ProcessCtx.gen_programs, url, progjsons):
                 if result.error:
@@ -257,7 +264,7 @@ def get_api_limits() -> ApiLimits:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-
+    
     response = sess.get(INIT_URL)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
@@ -286,6 +293,8 @@ def retrieve_guide(
     offset: int = 0,
     slow: bool = False,
     jobs: int = 1,
+    ratelimit: int = 1,
+    interval: int = 1,
 ) -> XmltvTv:
     """Retrieve guide from port.hu api.
 
@@ -338,7 +347,7 @@ def retrieve_guide(
     tv = XmltvTv()
     if len(progjsons) > 0:
         try:
-            progs = fetch_prog_info(progjsons, slow, jobs)
+            progs = fetch_prog_info(progjsons, slow, jobs, ratelimit, interval)
             tv.channels = list(channels.values())
             tv.programmes = progs
         except Exception:
@@ -378,10 +387,21 @@ def configure(
     )
     if add_options:
         conf.options = {}
-        for opt in ("loglevel", "quiet", "output", "days", "offset", "slow", "jobs"):
+        for opt in (
+            "loglevel",
+            "quiet",
+            "output",
+            "days",
+            "offset",
+            "slow",
+            "jobs",
+            "ratelimit",
+            "interval",
+        ):
             conf.options[opt] = getattr(args, opt)
 
     emptyconf = len(conf.channels) == 0
+    reconf = False
     if not emptyconf:
         reconf = ask_boolean("Reconfigure channels?\nDefaults are the current settings")
 
@@ -421,6 +441,11 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
     """
     argp.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
+    argp.epilog = (
+        "Setting --jobs or --ratelimit too high or --interval too low "
+        "may result in high resource usage and getting banned from port.hu"
+    )
+
     argp.add_argument(
         "--slow",
         action="store_true",
@@ -435,8 +460,27 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         default=1,
         help=(
             "Number of parallel processes used to download the guide. "
-            "Only used in --slow mode. Setting this value too high may result in "
-            "high resource usage and/or getting banned from port.hu"
+            "Only used in --slow mode."
+        ),
+    )
+    argp.add_argument(
+        "--ratelimit",
+        type=int,
+        default=1,
+        help=(
+            "Limits the number of request per --interval seconds. "
+            "Formula: ratelimit/interval requests per second. "
+            "Only used in --slow mode."
+        ),
+    )
+    argp.add_argument(
+        "--interval",
+        type=int,
+        default=1,
+        help=(
+            "Sets the interval of the --ratelimit parameter. "
+            "Formula: ratelimit/interval requests per second. "
+            "Only used in --slow mode."
         ),
     )
 
@@ -507,7 +551,15 @@ def main(
 
     enabled_ch_portids = [xmlid_to_portid(ch.id_) for ch in enabled_ch_list]
 
-    guide = retrieve_guide(enabled_ch_portids, days, args.offset, args.slow, args.jobs)
+    guide = retrieve_guide(
+        enabled_ch_portids,
+        days,
+        args.offset,
+        args.slow,
+        args.jobs,
+        args.ratelimit,
+        args.interval,
+    )
     writexml(guide, args.output)
     return 0
 
