@@ -3,11 +3,10 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import requests
-from fake_useragent import UserAgent  # type: ignore[import]
-from requests.adapters import HTTPAdapter
-from urllib3 import Retry
+from pyrate_limiter import Limiter, RequestRate  # type: ignore[import]
+from requests_ratelimiter import LimiterSession  # type: ignore[import]
 
-from pyepggrab.grabbers.hu_porthu.utils import to_absolute_porturl
+from pyepggrab.grabbers.hu_porthu.utils import BASE_URL, to_absolute_porturl
 from pyepggrab.grabbers.hu_porthu.xml_utils import create_xprogramme
 from pyepggrab.xmltv import XmltvProgramme
 
@@ -26,22 +25,33 @@ class ProcessCtx:
     session: requests.Session
 
     @classmethod
-    def init_context(cls) -> None:
+    def init_context(cls, rate_limit: int, interval: int) -> None:
         """Initialize the request session for a process.
 
         Only executed in other processes not in the main process.
         """
-        cls.session = requests.Session()
+        limiter = Limiter(RequestRate(rate_limit, interval))
+        cls.session = LimiterSession(limiter=limiter, per_host=False)
         cls.session.headers.update(
             {
                 "Accept": "text/html,application/xhtml+xml,application/xml",
                 "Accept-Encoding": "gzip, deflate, br",
             },
         )
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        cls.session.mount("http://", adapter)
-        cls.session.mount("https://", adapter)
+
+        cls.init_cookies()
+
+    @classmethod
+    def init_cookies(cls) -> None:
+        """Initialize cookies to be able to query the tvapi.
+
+        By querying this url the following cookies are retrieved:
+        `advanced`, `INX_CHECKER2`, `psid`, `legacy-psid`.
+
+        Only executed in other processes not in the main process.
+        """
+        cls.session.get(BASE_URL + "tv")
+        assert len(cls.session.cookies.get_dict()) > 0
 
     @classmethod
     def gen_programs(cls, url: str, json: List[Dict]) -> ProcResult:
@@ -55,7 +65,6 @@ class ProcessCtx:
 
         rsp = cls.session.get(
             to_absolute_porturl(url),
-            headers={"User-Agent": UserAgent().random},
         )
         if rsp.status_code == requests.codes.OK:
             return ProcResult(create_xprogramme(json, rsp))

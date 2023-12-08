@@ -8,7 +8,6 @@ from math import floor
 from typing import Dict, List, NoReturn, Optional, Tuple
 
 import requests
-from fake_useragent import UserAgent  # type: ignore[import]
 
 from pyepggrab.ask import ask_boolean, ask_many_boolean
 from pyepggrab.configmanager import ConfigManager
@@ -38,7 +37,7 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
 
-GRABBER_VERSION = "v1"
+GRABBER_VERSION = "v2"
 GRABBER_DESCRIPTION = "Hungary (port.hu)"
 GRABBER_CAPABILITIES = ["baseline", "manualconfig"]
 
@@ -52,6 +51,18 @@ class ApiLimits:
     channels: List[Channel]
 
 
+@dataclass
+class RetriveOptions:
+    """Options to configure the retriving process."""
+
+    days: int
+    offset: int
+    slow: bool
+    jobs: int
+    ratelimit: int
+    interval: int
+
+
 def get_simple_channel_list() -> List[dict]:
     """Return the list of channels that currently supported."""
     sess = requests.session()
@@ -61,7 +72,6 @@ def get_simple_channel_list() -> List[dict]:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
 
     rsp = sess.get(INIT_URL)
     if rsp.status_code == requests.codes.OK:
@@ -83,7 +93,10 @@ def build_url_map(progjsons: List[Dict]) -> Dict[Optional[str], List[Dict]]:
     return progmap
 
 
-def fetch_prog_info(jsons: List[Dict], slow: bool, jobs: int) -> List[XmltvProgramme]:
+def fetch_prog_info(
+    jsons: List[Dict],
+    options: RetriveOptions,
+) -> List[XmltvProgramme]:
     """Fetch program informations and create XMLTV Programme from them.
 
     :param jsons: programs returned by port.hu api in json format
@@ -93,7 +106,7 @@ def fetch_prog_info(jsons: List[Dict], slow: bool, jobs: int) -> List[XmltvProgr
     progs: List[XmltvProgramme] = []
     log = Log.get_grabber_logger()
 
-    if slow:
+    if options.slow:
         progmap = build_url_map(jsons)
 
         log.debug("Using slow mode")
@@ -112,8 +125,9 @@ def fetch_prog_info(jsons: List[Dict], slow: bool, jobs: int) -> List[XmltvProgr
         log.debug("Downloading details and generating programs")
         url, progjsons = zip(*[(k, v) for k, v in progmap.items() if k])
         with ProcessPoolExecutor(
-            max_workers=jobs,
+            max_workers=options.jobs,
             initializer=ProcessCtx.init_context,
+            initargs=(options.ratelimit, options.interval),
         ) as ppe:
             for result in ppe.map(ProcessCtx.gen_programs, url, progjsons):
                 if result.error:
@@ -259,7 +273,7 @@ def get_api_limits() -> ApiLimits:
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
+
     response = sess.get(INIT_URL)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
@@ -282,13 +296,7 @@ def get_api_limits() -> ApiLimits:
     return ApiLimits(valid, days, channels)
 
 
-def retrieve_guide(
-    chan_ids: List[str],
-    days: int = 0,
-    offset: int = 0,
-    slow: bool = False,
-    jobs: int = 1,
-) -> XmltvTv:
+def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
     """Retrieve guide from port.hu api.
 
     :param chan_ids: channel ids to be retrieved (port.hu id format (tvchannel-*))
@@ -306,13 +314,13 @@ def retrieve_guide(
             "Accept-Encoding": "gzip, deflate, br",
         },
     )
-    sess.headers["User-Agent"] = UserAgent().random
+
     dateformat = "%Y-%m-%d"
     date_from = datetime.now(ZoneInfo("Europe/Budapest")).date() + timedelta(
-        days=offset,
+        days=options.offset,
     )
     # date_from = date.today() + timedelta(days=offset)
-    date_to = date_from + timedelta(days=days)
+    date_to = date_from + timedelta(days=options.days)
 
     log.info(
         "retrieving programs from %s to %s for %d channel(s)",
@@ -340,7 +348,7 @@ def retrieve_guide(
     tv = XmltvTv()
     if len(progjsons) > 0:
         try:
-            progs = fetch_prog_info(progjsons, slow, jobs)
+            progs = fetch_prog_info(progjsons, options)
             tv.channels = list(channels.values())
             tv.programmes = progs
         except Exception:
@@ -380,10 +388,21 @@ def configure(
     )
     if add_options:
         conf.options = {}
-        for opt in ("loglevel", "quiet", "output", "days", "offset", "slow", "jobs"):
+        for opt in (
+            "loglevel",
+            "quiet",
+            "output",
+            "days",
+            "offset",
+            "slow",
+            "jobs",
+            "ratelimit",
+            "interval",
+        ):
             conf.options[opt] = getattr(args, opt)
 
     emptyconf = len(conf.channels) == 0
+    reconf = False
     if not emptyconf:
         reconf = ask_boolean("Reconfigure channels?\nDefaults are the current settings")
 
@@ -421,6 +440,13 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
 
     Called by pyepggrab
     """
+    argp.formatter_class = argparse.ArgumentDefaultsHelpFormatter
+
+    argp.epilog = (
+        "Setting --jobs or --ratelimit too high or --interval too low "
+        "may result in high resource usage and getting banned from port.hu"
+    )
+
     argp.add_argument(
         "--slow",
         action="store_true",
@@ -435,8 +461,27 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         default=1,
         help=(
             "Number of parallel processes used to download the guide. "
-            "Only used in --slow mode. Setting this value too high may result in "
-            "high resource usage and/or getting banned from port.hu"
+            "Only used in --slow mode."
+        ),
+    )
+    argp.add_argument(
+        "--ratelimit",
+        type=int,
+        default=1,
+        help=(
+            "Limits the number of request per --interval seconds. "
+            "Formula: ratelimit/interval requests per second. "
+            "Only used in --slow mode."
+        ),
+    )
+    argp.add_argument(
+        "--interval",
+        type=int,
+        default=1,
+        help=(
+            "Sets the interval of the --ratelimit parameter. "
+            "Formula: ratelimit/interval requests per second. "
+            "Only used in --slow mode."
         ),
     )
 
@@ -507,7 +552,17 @@ def main(
 
     enabled_ch_portids = [xmlid_to_portid(ch.id_) for ch in enabled_ch_list]
 
-    guide = retrieve_guide(enabled_ch_portids, days, args.offset, args.slow, args.jobs)
+    guide = retrieve_guide(
+        enabled_ch_portids,
+        RetriveOptions(
+            days,
+            args.offset,
+            args.slow,
+            args.jobs,
+            args.ratelimit,
+            args.interval,
+        ),
+    )
     writexml(guide, args.output)
     return 0
 

@@ -26,12 +26,12 @@ dependencies = [
   'backports.zoneinfo; python_version<"3.9"',
   "beautifulsoup4",
   "extruct",
-  "fake_useragent",
   "lxml",
   "requests",
   "roman",
   'typing_extensions; python_version<"3.12"',
   "urllib3",
+  "requests_ratelimiter",
 ]
 
 dynamic = ["version"]
