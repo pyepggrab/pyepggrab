@@ -31,7 +31,7 @@ class Log:
 
     @classmethod
     def get_pyepggrab_logger(cls) -> logging.Logger:
-        """Retirn the pyepggrab logger."""
+        """Return the pyepggrab logger."""
         return logging.getLogger("pyepggrab")
 
     @classmethod

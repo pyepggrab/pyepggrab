@@ -97,7 +97,7 @@ def fetch_prog_info(
     jsons: List[Dict],
     options: RetriveOptions,
 ) -> List[XmltvProgramme]:
-    """Fetch program informations and create XMLTV Programme from them.
+    """Fetch program information and create XMLTV Programme from them.
 
     :param jsons: programs returned by port.hu api in json format
     :param slow: query the program page to obtain extended information
@@ -471,7 +471,7 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         help=(
             "Limits the number of request per --interval seconds. "
             "Formula: ratelimit/interval requests per second. "
-            "Only used in --slow mode."
+            "Only used in --slow mode. Rate limit is enforced on per job basis."
         ),
     )
     argp.add_argument(
@@ -481,7 +481,7 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         help=(
             "Sets the interval of the --ratelimit parameter. "
             "Formula: ratelimit/interval requests per second. "
-            "Only used in --slow mode."
+            "Only used in --slow mode. Rate limit is enforced on per job basis."
         ),
     )
 

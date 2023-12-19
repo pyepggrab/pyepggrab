@@ -72,6 +72,10 @@ class ConfigManager(Generic[T]):
     def write_config(self, config: T) -> None:
         """Write the `root` type config to the config file."""
         configstr = json.dumps(config, cls=self._encoder, indent=2, ensure_ascii=False)
+
+        config_dir = self._path.resolve().parent
+        config_dir.mkdir(parents=True, exist_ok=True)
+
         with self._path.open("w", encoding="UTF-8") as file:
             Log.get_pyepggrab_logger().debug("Writing config file %s", self._path)
             file.write(configstr)
