@@ -471,7 +471,7 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         help=(
             "Limits the number of request per --interval seconds. "
             "Formula: ratelimit/interval requests per second. "
-            "Only used in --slow mode."
+            "Only used in --slow mode. Rate limit is enforced on per job basis."
         ),
     )
     argp.add_argument(
@@ -481,7 +481,7 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
         help=(
             "Sets the interval of the --ratelimit parameter. "
             "Formula: ratelimit/interval requests per second. "
-            "Only used in --slow mode."
+            "Only used in --slow mode. Rate limit is enforced on per job basis."
         ),
     )
 
