@@ -308,7 +308,7 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             page_desc = build_description(texts)
         else:
             log.warning(
-                "A response is received but can't found the description. url: %s",
+                "A response is received but the description can't be found. url: %s",
                 response.url,
             )
 

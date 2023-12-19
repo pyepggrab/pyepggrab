@@ -97,7 +97,7 @@ def fetch_prog_info(
     jsons: List[Dict],
     options: RetriveOptions,
 ) -> List[XmltvProgramme]:
-    """Fetch program informations and create XMLTV Programme from them.
+    """Fetch program information and create XMLTV Programme from them.
 
     :param jsons: programs returned by port.hu api in json format
     :param slow: query the program page to obtain extended information
