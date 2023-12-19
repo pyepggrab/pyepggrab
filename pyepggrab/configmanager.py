@@ -73,7 +73,7 @@ class ConfigManager(Generic[T]):
         """Write the `root` type config to the config file."""
         configstr = json.dumps(config, cls=self._encoder, indent=2, ensure_ascii=False)
 
-        config_dir = self._path.parent
+        config_dir = self._path.resolve().parent
         config_dir.mkdir(parents=True, exist_ok=True)
 
         with self._path.open("w", encoding="UTF-8") as file:
