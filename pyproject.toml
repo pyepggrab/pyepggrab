@@ -30,6 +30,7 @@ dependencies = [
   "requests",
   "roman",
   'typing_extensions; python_version<"3.12"',
+  "tzdata",
   "urllib3",
   "requests_ratelimiter",
 ]
