@@ -4,7 +4,7 @@ from enum import Enum
 
 
 class Cat(Enum):
-    """Map categories to translated strings."""
+    """Map ETSI EN 300 468 V1.14.1 categories to translated strings."""
 
     MOVIE_DRAMA = ("Movie/Drama", "Film/Dráma")
     DETECTIVE_THRILLER = ("Detective/Thriller", "Bűnügyi/Thriller")
@@ -259,6 +259,7 @@ CATDICT = {
     "melodráma": Cat.SOAP_MELODRAMA_FOLKLORIC,
     "mesefilm": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "mesejáték": Cat.CHILDRENS_YOUTH_PROGRAMMES,
+    "mesesorozat": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "miniportré-sorozat": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
     "minisorozat": Cat.MOVIE_DRAMA,
     "misztikus film": Cat.SCIENCEFICTION_FANTASY_HORROR,
@@ -307,8 +308,11 @@ CATDICT = {
     "sportműsor": Cat.SPORTS,
     "stand-up comedy": Cat.COMEDY,
     "szabadidős műsor": Cat.LEISURE_HOBBIES,
+    "szappanopera": Cat.SOAP_MELODRAMA_FOLKLORIC,
     "szatíra": Cat.MOVIE_DRAMA,
     "szatirikus vígjáték": Cat.MOVIE_DRAMA,
+    "szélhámosfilm": Cat.MOVIE_DRAMA,
+    "színházi közvetítés": Cat.ARTS_CULTURE,
     "színházi magazin": Cat.ARTS_CULTURE_MAGAZINES,
     "szórakoztató műsor": Cat.COMEDY,
     "szórakoztató sorozat": Cat.COMEDY,
