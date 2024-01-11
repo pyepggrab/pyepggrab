@@ -199,6 +199,7 @@ CATDICT = {
     "film": Cat.MOVIE_DRAMA,
     "filmdráma": Cat.MOVIE_DRAMA,
     "filmesszé": Cat.MOVIE_DRAMA,
+    "filmetűd": Cat.MOVIE_DRAMA,
     "filmsorozat": Cat.MOVIE_DRAMA,
     "filmszatíra": Cat.MOVIE_DRAMA,
     "főzős műsor": Cat.COOKING,
