@@ -168,6 +168,7 @@ CATDICT = {
     "animációs vígjáték": Cat.MOVIE_DRAMA,
     "animációs vígjátéksorozat": Cat.MOVIE_DRAMA,
     "autós magazin": Cat.MOTORING,
+    "bábfilm": Cat.CARTOONS_PUPPETS,
     "bábfilmsorozat": Cat.CARTOONS_PUPPETS,
     "bűnügyi film": Cat.DETECTIVE_THRILLER,
     "bűnügyi tévéfilmsorozat": Cat.DETECTIVE_THRILLER,
