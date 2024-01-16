@@ -4,7 +4,8 @@ from typing import Optional
 from pyepggrab.utils import remove_prefix, remove_suffix
 
 ID_BASE = ".port.hu"
-BASE_URL = "https://port.hu/"
+HOST = "port.hu"
+BASE_URL = f"https://{HOST}/"
 INIT_URL = BASE_URL + "tvapi/init"
 PROGLIST_URL = BASE_URL + "tvapi"
 

@@ -1,12 +1,14 @@
 """retrieving and parsing extended program inforamtion from port.hu."""
 from dataclasses import dataclass
+from multiprocessing import Queue
 from typing import Dict, List, Optional
 
 import requests
 from pyrate_limiter import Limiter, RequestRate  # type: ignore[import]
 from requests_ratelimiter import LimiterSession  # type: ignore[import]
 
-from pyepggrab.grabbers.hu_porthu.utils import BASE_URL, to_absolute_porturl
+from pyepggrab.grabbers.hu_porthu.use_ip_adapter import UseIPAdapter
+from pyepggrab.grabbers.hu_porthu.utils import to_absolute_porturl
 from pyepggrab.grabbers.hu_porthu.xml_utils import create_xprogramme
 from pyepggrab.xmltv import XmltvProgramme
 
@@ -25,37 +27,27 @@ class ProcessCtx:
     session: requests.Session
 
     @classmethod
-    def init_context(cls, rate_limit: int, interval: int) -> None:
+    def init_context(cls, rate_limit: int, interval: int, ip_queue: Queue) -> None:
         """Initialize the request session for a process.
+
+        :param rate_limit: amount of requests allowed per `interval`
+        :param interval: time windows of the `rate_limit`
+        :param ip_queue: queue of ip addresses that used by this process to
+        communicate (only 1 used)
 
         Only executed in other processes not in the main process.
         """
         limiter = Limiter(RequestRate(rate_limit, interval))
         cls.session = LimiterSession(limiter=limiter, per_host=False)
-        cls.session.headers.update(
-            {
-                "Accept": "text/html,application/xhtml+xml,application/xml",
-                "Accept-Encoding": "gzip, deflate, br",
-            },
-        )
 
-        cls.init_cookies()
-
-    @classmethod
-    def init_cookies(cls) -> None:
-        """Initialize cookies to be able to query the tvapi.
-
-        By querying this url the following cookies are retrieved:
-        `advanced`, `INX_CHECKER2`, `psid`, `legacy-psid`.
-
-        Only executed in other processes not in the main process.
-        """
-        cls.session.get(BASE_URL + "tv")
-        assert len(cls.session.cookies.get_dict()) > 0
+        port_ip = ip_queue.get()
+        use_ip_adepter = UseIPAdapter({"port.hu": port_ip})
+        cls.session.mount("http://", use_ip_adepter)
+        cls.session.mount("https://", use_ip_adepter)
 
     @classmethod
     def gen_programs(cls, url: str, json: List[Dict]) -> ProcResult:
-        """Generate XMLTV programs from the `json`and by querying the `url`.
+        """Generate XMLTV programs from the `json` and by querying the `url`.
 
         Only executed in other processes not in the main process.
         """

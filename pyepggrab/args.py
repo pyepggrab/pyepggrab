@@ -145,7 +145,7 @@ class ArgParser:
         Arguments must be parsed before
         """
         if not self._args:
-            msg = "No arguemnts. Use 'parse_args()' before calling"
+            msg = "No arguments. Use 'parse_args()' before calling"
             raise ValueError(msg)
 
         args = self._args
