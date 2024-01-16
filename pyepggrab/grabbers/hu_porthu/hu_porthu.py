@@ -53,7 +53,7 @@ class ApiLimits:
 
 @dataclass
 class RetriveOptions:
-    """Options to configure the retriving process."""
+    """Options to configure the retrieving process."""
 
     days: int
     offset: int
@@ -525,7 +525,7 @@ def main(
         for en_ch in enabled_ch_list:
             if en_ch.id_ not in chlimit_ids:
                 log.warning(
-                    "Channel '%s'(%s) not available on the API. (Maybe temporarly)",
+                    "Channel '%s'(%s) not available on the API. (Maybe temporary)",
                     en_ch.name,
                     en_ch.id_,
                 )
