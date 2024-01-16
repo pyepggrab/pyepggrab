@@ -1,3 +1,4 @@
+import os
 import tempfile
 import unittest
 
@@ -12,9 +13,11 @@ from pyepggrab.log import Log
 
 class TestConfigfile(unittest.TestCase):
     def setUp(self) -> None:
-        self.tmpfile = tempfile.NamedTemporaryFile()
+        fd, self.tmpfile = tempfile.mkstemp(prefix="test_")
+        os.close(fd)
+
         self.confmgr = ConfigManager(
-            self.tmpfile.name,
+            self.tmpfile,
             GrabberConfig,
             GrabberConfigEncoder,
         )
@@ -24,11 +27,11 @@ class TestConfigfile(unittest.TestCase):
         Log.finalize_loggers()
 
     def tearDown(self) -> None:
-        self.tmpfile.close()
+        os.remove(self.tmpfile)
 
     def test_read_config(self) -> None:
-        self.tmpfile.write(config_json.encode())
-        self.tmpfile.flush()
+        with open(self.tmpfile, "w") as f:
+            f.write(config_json)
 
         cfg = self.confmgr.read_config()
 
@@ -37,7 +40,9 @@ class TestConfigfile(unittest.TestCase):
     def test_write_config(self) -> None:
         self.confmgr.write_config(config_object)
 
-        jsoncfg = self.tmpfile.read().decode()
+        jsoncfg = ""
+        with open(self.tmpfile) as f:
+            jsoncfg = f.read()
 
         self.assertEqual(jsoncfg, config_json)
 
