@@ -25,6 +25,7 @@ classifiers = [
 dependencies = [
   'backports.zoneinfo; python_version<"3.9"',
   "beautifulsoup4",
+  "dnspython",
   "extruct",
   "lxml",
   "requests",

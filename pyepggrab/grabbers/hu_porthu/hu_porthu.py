@@ -5,8 +5,10 @@ from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from math import floor
+from multiprocessing import Queue
 from typing import Dict, List, NoReturn, Optional, Tuple
 
+import dns.resolver  # type: ignore[import]
 import requests
 
 from pyepggrab.ask import ask_boolean, ask_many_boolean
@@ -18,6 +20,7 @@ from pyepggrab.grabbers.hu_porthu.config import (
 )
 from pyepggrab.grabbers.hu_porthu.request_proc import ProcessCtx
 from pyepggrab.grabbers.hu_porthu.utils import (
+    HOST,
     INIT_URL,
     PROGLIST_URL,
     portid_to_xmlid,
@@ -123,11 +126,32 @@ def fetch_prog_info(
         current = 0
 
         log.debug("Downloading details and generating programs")
+
+        port_ips = dns.resolver.resolve(HOST)
+
+        if len(port_ips) == 0:
+            log.critical("Failed resolve '%s'. No IP address returned.", HOST)
+            return []
+
+        if len(port_ips) < options.jobs:
+            log.warning(
+                "Available endpoints are less the the requested jobs (%d < %d). "
+                "Only do that if you know what you are doing",
+                len(port_ips),
+                options.jobs,
+            )
+
+        # fill a queue with alternative IP addresses for the same host
+        # each process gets exactly one and uses it during its whole lifetime
+        ip_queue: Queue[str] = Queue(options.jobs)
+        for i in range(options.jobs):
+            ip_queue.put(port_ips[i % len(port_ips)].address)
+
         url, progjsons = zip(*[(k, v) for k, v in progmap.items() if k])
         with ProcessPoolExecutor(
             max_workers=options.jobs,
             initializer=ProcessCtx.init_context,
-            initargs=(options.ratelimit, options.interval),
+            initargs=(options.ratelimit, options.interval, ip_queue),
         ) as ppe:
             for result in ppe.map(ProcessCtx.gen_programs, url, progjsons):
                 if result.error:
