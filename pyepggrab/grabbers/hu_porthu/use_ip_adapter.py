@@ -47,17 +47,21 @@ class UseIPAdapter(HTTPAdapter):
         certificate verification.
         """
         pool_kw = self.poolmanager.connection_pool_kw
-        hostname = urlparse(request.url).hostname
-        if hostname in self.host_ip_map:
-            # CN/SAN
-            pool_kw["assert_hostname"] = hostname
-            # SNI
-            pool_kw["server_hostname"] = hostname
-        else:
-            if "assert_hostname" in pool_kw:
-                del pool_kw["assert_hostname"]
-            if "server_hostname" in pool_kw:
-                del pool_kw["server_hostname"]
+
+        parurl = urlparse(request.url)
+        if parurl.scheme == "https":
+            hostname = parurl.hostname
+            if hostname in self.host_ip_map:
+                # CN/SAN
+                pool_kw["assert_hostname"] = hostname
+                # SNI
+                pool_kw["server_hostname"] = hostname
+                return
+
+        if "assert_hostname" in pool_kw:
+            del pool_kw["assert_hostname"]
+        if "server_hostname" in pool_kw:
+            del pool_kw["server_hostname"]
 
     def get_connection(
         self,
