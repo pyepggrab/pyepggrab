@@ -68,7 +68,7 @@ class RetriveOptions:
 
 def get_simple_channel_list() -> List[dict]:
     """Return the list of channels that currently supported."""
-    rsp = requests.get(INIT_URL)
+    rsp = requests.get(INIT_URL, timeout=10)
     if rsp.status_code == requests.codes.OK:
         chlist = rsp.json()
         return chlist["channels"]
@@ -282,7 +282,7 @@ def get_api_limits() -> ApiLimits:
     days = 0
     channels: List[Channel] = []
 
-    response = requests.get(INIT_URL)
+    response = requests.get(INIT_URL, timeout=10)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
 
@@ -336,6 +336,7 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
             "i_datetime_from": date_from.strftime(dateformat),
             "i_datetime_to": date_to.strftime(dateformat),
         },
+        timeout=10,
     )
 
     channels: Dict[str, XmltvChannel] = {}
