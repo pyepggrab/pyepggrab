@@ -23,7 +23,7 @@ class Cat(Enum):
         "Serious/Classical/Religious/Historical movie/drama",
         "Komoly/Klasszikus/Vallási/Történelmi/Dráma",
     )
-    ADULT_MOVIE_DRAMA = ("Adult movie/drama", "Felnőtt dilm/Dráma")
+    ADULT_MOVIE_DRAMA = ("Adult movie/drama", "Felnőtt film/dráma")
 
     NEWS_CURRENTAFFAIRS = ("News/Current affairs", "Hírek/Aktualitások")
     NEWS_WEATHERREPORT = ("News/Weather report", "Hírek/Időjárásjelentés")
@@ -177,6 +177,7 @@ CATDICT = {
     "családi filmsorozat": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "családi kalandfilm": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "családi vígjáték": Cat.CHILDRENS_YOUTH_PROGRAMMES,
+    "dokumentum játékfilm": Cat.MOVIE_DRAMA,
     "dokumentumfilm": Cat.EDUCATION_SCIENCE_FACTUAL,
     "dokumentumfilm összeállítás": Cat.EDUCATION_SCIENCE_FACTUAL,
     "dokumentumfilm sorozat": Cat.EDUCATION_SCIENCE_FACTUAL,
@@ -188,6 +189,7 @@ CATDICT = {
     "életrajzi dráma": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
     "életrajzi film": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
     "életrajzi minisorozat": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
+    "erotikus-thriller": Cat.ADULT_MOVIE_DRAMA,
     "extrém vetélkedő": Cat.GAMESHOW_QUIZ_CONTEST,
     "fantasy": Cat.SCIENCEFICTION_FANTASY_HORROR,
     "fantasy sorozat": Cat.SCIENCEFICTION_FANTASY_HORROR,
@@ -210,6 +212,7 @@ CATDICT = {
     "gasztronómiai műsor": Cat.COOKING,
     "gasztroshow": Cat.COOKING,
     "gazdasági műsor": Cat.SOCIAL_POLITICALISSUES_ECONOMICS,
+    "gengszterfilm": Cat.DETECTIVE_THRILLER,
     "gyerekfilm sorozat": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "gyerekműsor": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "gyermekfilm": Cat.CHILDRENS_YOUTH_PROGRAMMES,
@@ -272,6 +275,7 @@ CATDICT = {
     "művészeti magazin": Cat.ARTS_CULTURE_MAGAZINES,
     "művészeti műsor": Cat.ARTS_CULTURE,
     "művészeti portésorozat": Cat.ARTS_CULTURE_MAGAZINES,
+    "operafilm": Cat.MUSICAL_OPERA,
     "párkapcsolati kalauz": Cat.ADULT_MOVIE_DRAMA,
     "politikai dráma": Cat.MOVIE_DRAMA,
     "politikai műsor": Cat.SOCIAL_POLITICALISSUES_ECONOMICS,
