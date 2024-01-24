@@ -336,7 +336,7 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
             "i_datetime_from": date_from.strftime(dateformat),
             "i_datetime_to": date_to.strftime(dateformat),
         },
-        timeout=10,
+        timeout=150,
     )
 
     channels: Dict[str, XmltvChannel] = {}
