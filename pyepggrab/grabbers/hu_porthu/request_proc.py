@@ -57,6 +57,7 @@ class ProcessCtx:
 
         rsp = cls.session.get(
             to_absolute_porturl(url),
+            timeout=10,
         )
         if rsp.status_code == requests.codes.OK:
             return ProcResult(create_xprogramme(json, rsp))

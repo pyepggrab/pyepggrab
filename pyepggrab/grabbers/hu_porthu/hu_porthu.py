@@ -68,15 +68,7 @@ class RetriveOptions:
 
 def get_simple_channel_list() -> List[dict]:
     """Return the list of channels that currently supported."""
-    sess = requests.session()
-    sess.headers.update(
-        {
-            "Accept": "text/html,application/xhtml+xml,application/xml",
-            "Accept-Encoding": "gzip, deflate, br",
-        },
-    )
-
-    rsp = sess.get(INIT_URL)
+    rsp = requests.get(INIT_URL, timeout=10)
     if rsp.status_code == requests.codes.OK:
         chlist = rsp.json()
         return chlist["channels"]
@@ -290,15 +282,7 @@ def get_api_limits() -> ApiLimits:
     days = 0
     channels: List[Channel] = []
 
-    sess = requests.session()
-    sess.headers.update(
-        {
-            "Accept": "text/html,application/xhtml+xml,application/xml",
-            "Accept-Encoding": "gzip, deflate, br",
-        },
-    )
-
-    response = sess.get(INIT_URL)
+    response = requests.get(INIT_URL, timeout=10)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
 
@@ -331,14 +315,6 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
     """
     log = Log.get_grabber_logger()
 
-    sess = requests.session()
-    sess.headers.update(
-        {
-            "Accept": "text/html,application/xhtml+xml,application/xml",
-            "Accept-Encoding": "gzip, deflate, br",
-        },
-    )
-
     dateformat = "%Y-%m-%d"
     date_from = datetime.now(ZoneInfo("Europe/Budapest")).date() + timedelta(
         days=options.offset,
@@ -353,13 +329,14 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
         len(chan_ids),
     )
 
-    response = sess.get(
+    response = requests.get(
         PROGLIST_URL,
         params={
             "channel_id[]": chan_ids,
             "i_datetime_from": date_from.strftime(dateformat),
             "i_datetime_to": date_to.strftime(dateformat),
         },
+        timeout=150,
     )
 
     channels: Dict[str, XmltvChannel] = {}
