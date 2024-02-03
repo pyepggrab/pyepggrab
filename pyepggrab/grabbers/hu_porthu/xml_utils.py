@@ -1,4 +1,5 @@
 """XML utilities to build and parse to XMLTV format."""
+
 import re
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Tuple

@@ -1,4 +1,5 @@
 """retrieving and parsing extended program inforamtion from port.hu."""
+
 from dataclasses import dataclass
 from multiprocessing import Queue
 from typing import Dict, List, Optional
