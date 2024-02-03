@@ -1,4 +1,5 @@
 """Collection of utilities used in many parts of hu_porthu."""
+
 from typing import Optional
 
 from pyepggrab.utils import remove_prefix, remove_suffix

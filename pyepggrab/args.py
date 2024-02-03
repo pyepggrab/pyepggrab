@@ -5,6 +5,7 @@ Handles the execution of common arguments like --version or --capabilities
 capabilities are same as described in the original XMLTV docs:
 http://wiki.xmltv.org/index.php/XmltvCapabilities
 """
+
 import argparse
 import logging
 import sys

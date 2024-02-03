@@ -16,6 +16,7 @@ recommended to keep the `options` dict in the config. Other classes used in the
 config are recommended to be a subclass of `ConfigBase`, but any other class
 can be used in the config.
 """
+
 import json
 import sys
 from json import JSONDecoder, JSONEncoder
