@@ -281,6 +281,7 @@ CATDICT = {
     "párkapcsolati kalauz": Cat.ADULT_MOVIE_DRAMA,
     "politikai dráma": Cat.MOVIE_DRAMA,
     "politikai műsor": Cat.SOCIAL_POLITICALISSUES_ECONOMICS,
+    "politikai thriller": Cat.DETECTIVE_THRILLER,
     "portréfilm": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
     "pszichothriller": Cat.DETECTIVE_THRILLER,
     "rajzfilm": Cat.CHILDRENS_YOUTH_PROGRAMMES,
