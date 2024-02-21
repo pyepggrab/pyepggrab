@@ -55,13 +55,9 @@ Source = "https://github.com/pyepggrab/pyepggrab"
 [project.scripts]
 tv_grab_pyepg_hu_porthu = "pyepggrab.grabbers.hu_porthu.hu_porthu:run"
 
-[tool.hatch.build]
-include = [
-  "pyepggrab",
-]
-
 [tool.hatch.build.targets.wheel]
 packages = ["pyepggrab"]
+exclude = ["*.md"]
 
 [tool.hatch.version]
 path = "pyepggrab/__about__.py"

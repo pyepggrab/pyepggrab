@@ -62,6 +62,41 @@ pipx install dist/pyepggrab-*.whl
 [porthu]: https://port.hu
 [hu_porthu]: pyepggrab/grabbers/hu_porthu
 
+## Standard XMLTV parameters
+
+### All grabbers
+
+- `--capabilities`: capabilities of the grabber (below)
+- `--description`: short description of the grabber
+- `--help`: list of all parameters that the grabber supports
+- `--version`: display the version of the grabber
+
+### Baseline capability 
+
+- `--quiet`: no logging output (supported by every grabber)
+- `--output`: save the output to a file (default is STDOUT)
+- `--days`: Download the specified number of days
+- `--offset`: Download from the specified offset (0 = today)
+- `--config-file`: use the specified config file
+
+### Manualconfig capability 
+
+- `--configure`: run an interactive configuration session
+
+## Pyepggrab specific parameters
+
+### All grabbers
+
+- `--pyepggrabver`: display the version of pyepggrab
+- `-q`, `--quiet`: alias for the baseline parameter
+- `-l`, `--loglevel`: logging level: FATAL, ERROR, WARNING, INFO, DEBUG
+- `-v`, `--verbose`: alias for `--loglevel INFO`
+- `-d`, `--debug`: alias for `--loglevel DEBUG`
+
+### Grabber specific parameters
+
+Documented in each grabber's README.
+
 ## Roadmap
 
 In no particular order
