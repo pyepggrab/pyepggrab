@@ -84,7 +84,7 @@ dependencies = [
 ]
 [tool.hatch.envs.style.scripts]
 check = [
-  "ruff pyepggrab tests tests_live",
+  "ruff check pyepggrab tests tests_live",
   "mypy --install-types --non-interactive pyepggrab tests tests_live",
   "black --check --diff pyepggrab tests tests_live",
 ]
