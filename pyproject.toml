@@ -31,7 +31,7 @@ dependencies = [
   "lxml",
   "requests",
   "roman",
-  'typing_extensions; python_version<"3.12"',
+  'typing_extensions>=4.4; python_version<"3.12"',
   "tzdata",
   "urllib3",
   "requests_ratelimiter",
@@ -84,7 +84,7 @@ dependencies = [
 ]
 [tool.hatch.envs.style.scripts]
 check = [
-  "ruff pyepggrab tests tests_live",
+  "ruff check pyepggrab tests tests_live",
   "mypy --install-types --non-interactive pyepggrab tests tests_live",
   "black --check --diff pyepggrab tests tests_live",
 ]
