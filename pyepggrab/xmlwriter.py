@@ -20,7 +20,8 @@ def writexml(xml: XmltvTv, path: Optional[str] = None, validate: bool = True) ->
     log = Log.get_pyepggrab_logger()
 
     if validate:
-        dtd = etree.DTD(Path(Path(__file__).parent, "resources/xmltv.dtd"))
+        # use str path because lxml <= 4.7.1 does not support path-like objects
+        dtd = etree.DTD(str(Path(Path(__file__).parent, "resources/xmltv.dtd")))
         if not dtd.validate(xml.to_xmltree()):
             log.error("XML not valid")
             # _ErrorLog is iterable: https://lxml.de/api/lxml.etree._ErrorLog-class.html
