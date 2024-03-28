@@ -138,14 +138,23 @@ def fetch_prog_info(
                 options.jobs,
             )
 
+        ctx: BaseContext
+        try:
+            # use forkserver if available
+            # saves memory on Linux platforms compared to fork
+            ctx = multiprocessing.get_context("forkserver")
+        except ValueError:
+            ctx = multiprocessing.get_context()
+
         # fill a queue with alternative IP addresses for the same host
         # each process gets exactly one and uses it during its whole lifetime
-        ip_queue: Queue[str] = Queue(options.jobs)
+        ip_queue: Queue[str] = ctx.Queue(options.jobs)
         for i in range(options.jobs):
             ip_queue.put(port_ips[i % len(port_ips)].address)
 
         with ProcessPoolExecutor(
             max_workers=options.jobs,
+            mp_context=ctx,
             initializer=ProcessCtx.init_context,
             initargs=(options.ratelimit, options.interval, ip_queue),
         ) as ppe:
