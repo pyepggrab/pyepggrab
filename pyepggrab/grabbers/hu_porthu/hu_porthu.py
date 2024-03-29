@@ -2,11 +2,13 @@
 
 import argparse
 import logging
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from math import floor
 from multiprocessing import Queue
+from multiprocessing.context import BaseContext
 from typing import Dict, List, NoReturn, Optional, Tuple
 
 import dns.resolver  # type: ignore[import]
@@ -118,6 +120,8 @@ def fetch_prog_info(
         nextpercent = onepercent
         current = 0
 
+        del jsons
+
         log.debug("Downloading details and generating programs")
 
         port_ips = dns.resolver.resolve(HOST)
@@ -134,19 +138,30 @@ def fetch_prog_info(
                 options.jobs,
             )
 
+        ctx: BaseContext
+        try:
+            # use forkserver if available
+            # saves memory on Linux platforms compared to fork
+            ctx = multiprocessing.get_context("forkserver")
+        except ValueError:
+            ctx = multiprocessing.get_context()
+
         # fill a queue with alternative IP addresses for the same host
         # each process gets exactly one and uses it during its whole lifetime
-        ip_queue: Queue[str] = Queue(options.jobs)
+        ip_queue: Queue[str] = ctx.Queue(options.jobs)
         for i in range(options.jobs):
             ip_queue.put(port_ips[i % len(port_ips)].address)
 
-        url, progjsons = zip(*[(k, v) for k, v in progmap.items() if k])
         with ProcessPoolExecutor(
             max_workers=options.jobs,
+            mp_context=ctx,
             initializer=ProcessCtx.init_context,
             initargs=(options.ratelimit, options.interval, ip_queue),
         ) as ppe:
-            for result in ppe.map(ProcessCtx.gen_programs, url, progjsons):
+            for result in ppe.map(
+                ProcessCtx.gen_programs,
+                *zip(*((k, v) for k, v in progmap.items() if k)),
+            ):
                 if result.error:
                     log.warning(result.error)
 
@@ -346,6 +361,8 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
         channels, progjsons = extract_channel_data(response.json(), chan_ids, date_from)
 
     log.debug("Retrieved %d programs on %d channel(s)", len(progjsons), len(channels))
+
+    del response
 
     tv = XmltvTv()
     if len(progjsons) > 0:

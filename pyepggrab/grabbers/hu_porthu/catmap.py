@@ -352,6 +352,7 @@ CATDICT = {
     "vallási műsor": Cat.RELIGION,
     "valóságshow": Cat.GAMESHOW_QUIZ_CONTEST,
     "vetélkedő": Cat.GAMESHOW_QUIZ_CONTEST,
+    "videófilmösszeállítás": Cat.MOVIE_DRAMA,
     "videóklipek": Cat.MOVIE_DRAMA,
     "vígjáték": Cat.COMEDY,
     "vígjátéksorozat": Cat.COMEDY,
