@@ -53,7 +53,8 @@ class ApiLimits:
     """Limits of the port.hu API."""
 
     valid: bool
-    days: int
+    start_offset: int
+    end_offset: int
     channels: List[Channel]
 
 
@@ -291,16 +292,19 @@ def extract_channel_data(
 def get_api_limits() -> ApiLimits:
     """Retrieve the current state of the API."""
     valid = True
-    days = 0
+    start_offset = 0
+    end_offset = 0
     channels: List[Channel] = []
 
     response = requests.get(INIT_URL, timeout=10)
     if response.status_code == requests.codes.OK:
         resp_json: dict = response.json()
 
-        j_days = resp_json.get("days")
-        if j_days:
-            days = len(j_days)
+        j_days = resp_json.get("daysDate")
+        if j_days and len(j_days) > 0:
+            today = datetime.now(ZoneInfo("Europe/Budapest")).date()
+            start_offset = (datetime.fromisoformat(j_days[0]).date() - today).days
+            end_offset = (datetime.fromisoformat(j_days[-1]).date() - today).days
         else:
             valid = False
 
@@ -313,7 +317,7 @@ def get_api_limits() -> ApiLimits:
                     valid = False
                 channels.append(conf_ch)
 
-    return ApiLimits(valid, days, channels)
+    return ApiLimits(valid, start_offset, end_offset, channels)
 
 
 def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
@@ -501,6 +505,31 @@ def extraargs(argp: argparse.ArgumentParser) -> None:
     )
 
 
+def calculate_default_days(limits: ApiLimits, offset: int) -> int:
+    """Calculate the default day count basen on the API limits and the offset."""
+    log = Log.get_grabber_logger()
+
+    if limits.valid and limits.end_offset >= offset >= limits.start_offset:
+        log.info(
+            "No days specified, retrieving all currently advertised (%d)",
+            limits.end_offset - offset,
+        )
+        days = limits.end_offset - offset
+    elif limits.valid:
+        log.info(
+            "No days specified and offset (%d) is outside of the "
+            "adverised range (%d - %d), retrieving maximum of 30 days",
+            offset,
+            limits.start_offset,
+            limits.end_offset,
+        )
+        days = 30
+    else:
+        log.info("No days specified, retrieving maximum of 30 days")
+        days = 30
+    return days
+
+
 @Pyepggrab.grabber_main
 def main(
     args: argparse.Namespace,
@@ -548,22 +577,18 @@ def main(
     offset = args.offset
     days = args.days
     if days is None:
-        if limits.valid:
-            log.info(
-                "No days specified, retrieving all currently available (%d)",
-                limits.days - offset,
-            )
-            days = limits.days - offset
-        else:
-            log.info("No days specified, retrieving maximum of 30 days")
-            days = 30
+        days = calculate_default_days(limits, offset)
 
-    if limits.valid and days > limits.days - offset:
-        log.warning(
-            "Specified number of days (%d) is larger than available, "
-            "expect no programs after %d day(s)",
-            days,
-            limits.days - offset,
+    if limits.valid and (
+        offset < limits.start_offset or offset + days > limits.end_offset
+    ):
+        log.info(
+            "Specified days (%d - %d) are outside of the advertised range (%d - %d), "
+            "there may not be any program outside that",
+            offset,
+            offset + days,
+            limits.start_offset,
+            limits.end_offset,
         )
 
     enabled_ch_portids = [xmlid_to_portid(ch.id_) for ch in enabled_ch_list]
