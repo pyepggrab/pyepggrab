@@ -196,19 +196,16 @@ def check_expected_channels(
     retrieved_ids: List[str],
     day: date,
 ) -> None:
-    """Check if the number of retrieved channels are same as requested.
+    """Check if the retrieved channels are same as requested.
 
     If they are different may indicate an error on our or on port.hu side.
     Either way the programs for these channels are going to be missing so warn about it
     """
     log = Log.get_grabber_logger()
 
-    if len(expected_ids) == len(retrieved_ids):
-        return
-
     if len(retrieved_ids) == 0:
-        log.debug("No programs received on %s", str(day))
-    else:
+        log.warning("No programs received on %s", str(day))
+    elif len(expected_ids) != len(retrieved_ids):
         log.warning(
             "Requested and received channel count does not match (%d != %d) "
             "for day %s",
@@ -216,18 +213,14 @@ def check_expected_channels(
             len(retrieved_ids),
             str(day),
         )
-    if log.getEffectiveLevel() <= logging.DEBUG:
-        for exp in expected_ids:
-            # exp is port style
-            xmlexp = portid_to_xmlid(exp)
-            if xmlexp not in retrieved_ids:
-                log.debug("Missing channel: %s", xmlexp)
 
-        for recv in retrieved_ids:
-            # recv is xmlid style
-            portrecv = xmlid_to_portid(recv)
-            if portrecv not in expected_ids:
-                log.debug("Extra channel: %s", recv)
+    set_exp_ids = {portid_to_xmlid(ret) for ret in expected_ids}
+    set_ret_ids = set(retrieved_ids)
+    for miss in set_exp_ids - set_ret_ids:
+        log.warning("Missing channel: %s, day: %s", miss, str(day))
+
+    for extra in set_ret_ids - set_exp_ids:
+        log.warning("Extra channel: %s, day: %s", extra, str(day))
 
 
 def extract_channel_prog(ch: Dict) -> List[Dict]:
