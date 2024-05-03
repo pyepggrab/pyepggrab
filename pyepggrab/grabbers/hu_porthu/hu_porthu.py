@@ -549,24 +549,25 @@ def main(
                     en_ch.id_,
                 )
 
+    offset = args.offset
     days = args.days
     if days is None:
         if limits.valid:
             log.info(
                 "No days specified, retrieving all currently available (%d)",
-                limits.days,
+                limits.days - offset,
             )
-            days = limits.days
+            days = limits.days - offset
         else:
             log.info("No days specified, retrieving maximum of 30 days")
             days = 30
 
-    if limits.valid and days > limits.days:
+    if limits.valid and days > limits.days - offset:
         log.warning(
             "Specified number of days (%d) is larger than available, "
             "expect no programs after %d day(s)",
             days,
-            limits.days,
+            limits.days - offset,
         )
 
     enabled_ch_portids = [xmlid_to_portid(ch.id_) for ch in enabled_ch_list]
@@ -575,7 +576,7 @@ def main(
         enabled_ch_portids,
         RetriveOptions(
             days,
-            args.offset,
+            offset,
             args.slow,
             args.jobs,
             args.ratelimit,
