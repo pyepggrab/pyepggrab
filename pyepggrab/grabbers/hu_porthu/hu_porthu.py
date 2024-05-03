@@ -216,8 +216,11 @@ def check_expected_channels(
 
     set_exp_ids = {portid_to_xmlid(ret) for ret in expected_ids}
     set_ret_ids = set(retrieved_ids)
-    for miss in set_exp_ids - set_ret_ids:
-        log.warning("Missing channel: %s, day: %s", miss, str(day))
+    if len(set_ret_ids) > 0:
+        for miss in set_exp_ids - set_ret_ids:
+            log.warning("Missing channel: %s, day: %s", miss, str(day))
+    else:
+        log.warning("No channels received, day: %s", str(day))
 
     for extra in set_ret_ids - set_exp_ids:
         log.warning("Extra channel: %s, day: %s", extra, str(day))
