@@ -357,6 +357,7 @@ CATDICT = {
     "videóklipek": Cat.MOVIE_DRAMA,
     "vígjáték": Cat.COMEDY,
     "vígjátéksorozat": Cat.COMEDY,
+    "vígopera": Cat.MUSICAL_OPERA,
     "werkfilm": Cat.MOVIE_DRAMA,
     "western": Cat.ADVENTURE_WESTERN_WAR,
     "western-vígjáték": Cat.COMEDY,
