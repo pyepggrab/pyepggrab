@@ -1,6 +1,6 @@
 """Adapter for the requests module to avoid DNS queries."""
 
-from typing import Dict, Optional
+from typing import Dict, Mapping, Optional, Union
 from urllib.parse import urlparse
 
 from requests import PreparedRequest, Response
@@ -65,12 +65,12 @@ class UseIPAdapter(HTTPAdapter):
 
     def get_connection(
         self,
-        url: str,
-        proxies: Optional[dict] = None,
+        url: Union[str, bytes],
+        proxies: Optional[Mapping[str, str]] = None,
     ) -> HTTPConnectionPool:
         """Replace hostname and returns a urllib3 connection for `url`."""
-        url = self._replace_hostname(url)
-        return super().get_connection(url, proxies)
+        url = self._replace_hostname(str(url))
+        return super().get_connection(url, proxies)  # type: ignore[return-value]
 
     def send(self, request: PreparedRequest, *args, **kwargs) -> Response:
         """Set up poolmanager and send the `request` object."""
