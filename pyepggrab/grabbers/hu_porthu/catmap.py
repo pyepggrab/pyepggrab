@@ -348,6 +348,7 @@ CATDICT = {
     "történelmi kalandfilm": Cat.ADVENTURE_WESTERN_WAR,
     "történelmi sorozat": Cat.SERIOUS_CLASSICAL_RELIGIOUS_HISTORICAL_MOVIE_DRAMA,
     "történelmi vígjáték": Cat.COMEDY,
+    "tragikomédia": Cat.COMEDY,
     "útifilm": Cat.FOREIGNCOUNTRIES_EXPEDITIONS,
     "útifilm-sorozat": Cat.FOREIGNCOUNTRIES_EXPEDITIONS,
     "vallási műsor": Cat.RELIGION,
