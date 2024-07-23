@@ -353,6 +353,7 @@ CATDICT = {
     "útifilm-sorozat": Cat.FOREIGNCOUNTRIES_EXPEDITIONS,
     "vallási műsor": Cat.RELIGION,
     "valóságshow": Cat.GAMESHOW_QUIZ_CONTEST,
+    "versösszeállítás": Cat.LITERATURE,
     "vetélkedő": Cat.GAMESHOW_QUIZ_CONTEST,
     "videófilmösszeállítás": Cat.MOVIE_DRAMA,
     "videóklipek": Cat.MOVIE_DRAMA,
