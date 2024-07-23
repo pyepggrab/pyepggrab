@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "pyepggrab"
 description = 'Drop in replacement/extension to xmltv grabbers'
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 license = "MIT"
 keywords = [
   "XMLTV",
@@ -16,7 +16,6 @@ keywords = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -73,7 +72,7 @@ unittest = "python -m unittest discover -b {args}"
 template = "test"
 
 [[tool.hatch.envs.matrixtest.matrix]]
-python = ["37", "38", "39", "310", "311", "312"]
+python = ["38", "39", "310", "311", "312"]
 
 [tool.hatch.envs.style]
 detached = true
