@@ -28,7 +28,7 @@ dependencies = [
   "beautifulsoup4",
   "dnspython",
   "extruct",
-  "lxml<=5.1.0",
+  "lxml",
   "requests",
   "roman",
   'typing_extensions>=4.4; python_version<"3.12"',
