@@ -43,7 +43,7 @@ class _XmltvBase:
                 ret[xkey] = str(v)
         return ret
 
-    def _to_xml(  # noqa: PLR0913
+    def _to_xml(
         self,
         parent: Optional[etree._Element],
         tag_name: str,
