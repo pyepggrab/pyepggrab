@@ -153,6 +153,7 @@ class Cat(Enum):
 
 
 CATDICT = {
+    "akció minisorozat": Cat.MOVIE_DRAMA,
     "akció-horror": Cat.SCIENCEFICTION_FANTASY_HORROR,
     "akció-vígjáték": Cat.COMEDY,
     "akciófilm": Cat.MOVIE_DRAMA,
