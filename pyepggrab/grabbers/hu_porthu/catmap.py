@@ -333,6 +333,7 @@ CATDICT = {
     "szórakoztató sorozat": Cat.COMEDY,
     "szórakoztató vetélkedő": Cat.GAMESHOW_QUIZ_CONTEST,
     "talk show": Cat.TALKSHOW,
+    "tehetségkutató": Cat.SHOW_GAMESHOW,
     "telenovella": Cat.MOVIE_DRAMA,
     "televíziós vásárlási műsorablak": Cat.ADVERTISEMENT_SHOPPING,
     "természetfilm": Cat.NATURE_ANIMALS_ENVIRONMENT,
