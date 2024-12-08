@@ -143,8 +143,6 @@ ignore = [
   "D213", # incompat (D212)
   "ANN002",
   "ANN003",
-  "ANN101",
-  "ANN102",
 ]
 
 [tool.ruff.lint.per-file-ignores]
