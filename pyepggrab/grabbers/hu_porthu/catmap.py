@@ -179,6 +179,7 @@ CATDICT = {
     "családi kalandfilm": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "családi vígjáték": Cat.CHILDRENS_YOUTH_PROGRAMMES,
     "dokumentum játékfilm": Cat.MOVIE_DRAMA,
+    "dokumentum musical": Cat.MUSICAL_OPERA,
     "dokumentumfilm": Cat.EDUCATION_SCIENCE_FACTUAL,
     "dokumentumfilm összeállítás": Cat.EDUCATION_SCIENCE_FACTUAL,
     "dokumentumfilm sorozat": Cat.EDUCATION_SCIENCE_FACTUAL,
