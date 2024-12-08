@@ -73,7 +73,9 @@ venezuelai-amerikai-Puerto Rico-i filmsorozat, 230. rész ->
 if the `countries` can be categorized then it's a category not a country
 """
 
-RE_DESC_TAG = re.compile(r"<div class=\"description\">([\s\S]+?)</div>")
+RE_DESC_TAG = re.compile(
+    r"<article.*?id=\"document-description\".*?>([\s\S]+?)</article>",
+)
 RE_EXTRACT_TEXT = re.compile(r">([\s\S]+?)<")
 
 RE_HTML_TAG = re.compile(r"<[^>]*>")

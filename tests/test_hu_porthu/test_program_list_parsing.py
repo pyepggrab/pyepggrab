@@ -10,7 +10,6 @@ from requests import Response
 from pyepggrab.grabbers.hu_porthu import hu_porthu
 from pyepggrab.log import Log
 from pyepggrab.xmltv import (
-    XmltvActor,
     XmltvCategory,
     XmltvChannel,
     XmltvComposer,
@@ -61,9 +60,11 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertCountEqual(daystart_dayend_progjsons, progjsons)
 
     def test_series_parse_series_slow(self) -> None:
-        with TESTDATADIR.joinpath("series.json").open(
+        with TESTDATADIR.joinpath("episode-3042606.json").open(
             encoding="UTF-8",
-        ) as jfile, TESTDATADIR.joinpath("series.html").open(encoding="UTF-8") as hfile:
+        ) as jfile, TESTDATADIR.joinpath("episode-3042606.html").open(
+            encoding="UTF-8",
+        ) as hfile:
             jdata = json.load(jfile)
             html = hfile.read()
 
@@ -78,7 +79,9 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertEqual(parse_series_slow, xprog[0])
 
     def test_series_parse_series(self) -> None:
-        with TESTDATADIR.joinpath("series.json").open(encoding="UTF-8") as file:
+        with TESTDATADIR.joinpath("episode-3042606.json").open(
+            encoding="UTF-8",
+        ) as file:
             jdata = json.load(file)
             xprog = hu_porthu.create_xprogramme([jdata], None)
 
@@ -87,9 +90,11 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertEqual(parse_series, xprog[0])
 
     def test_series_parse_movie_slow(self) -> None:
-        with TESTDATADIR.joinpath("movie.json").open(
+        with TESTDATADIR.joinpath("movie-256363.json").open(
             encoding="UTF-8",
-        ) as jfile, TESTDATADIR.joinpath("movie.html").open(encoding="UTF-8") as hfile:
+        ) as jfile, TESTDATADIR.joinpath("movie-256363.html").open(
+            encoding="UTF-8",
+        ) as hfile:
             jdata = json.load(jfile)
             html = hfile.read()
 
@@ -104,7 +109,7 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertEqual(parse_movie_slow, xprog[0])
 
     def test_series_parse_movie(self) -> None:
-        with TESTDATADIR.joinpath("movie.json").open(encoding="UTF-8") as file:
+        with TESTDATADIR.joinpath("movie-256363.json").open(encoding="UTF-8") as file:
             jdata = json.load(file)
             xprog = hu_porthu.create_xprogramme([jdata], None)
 
@@ -376,225 +381,74 @@ daystart_dayend_progjsons = [
 ]
 
 parse_series_slow = XmltvProgramme(
-    start="20230209002500 +0100",
-    stop="20230209005500 +0100",
-    channel="194.port.hu",
-    titles=[XmltvTitle("South Park")],
+    start="20241208041500 +0100",
+    stop="20241208050500 +0100",
+    channel="9.port.hu",
+    titles=[XmltvTitle("A tudomány története")],
     sub_titles=[
         XmltvSubTitle(
-            "Gluténmentes ebola - (amerikai animációs sorozat, 18/2. rész, 1997)",
+            "Mi van rajtunk kívül? - (angol dokumentumfilm sorozat, 1/1. rész, 2010)",
             "hu",
         ),
     ],
     descs=[
         XmltvDesc(
-            "Az aktuális rész ismertetője: South Park gluténmentessé válik.\n\n"
-            "A műsor ismertetése: A South Park minden idők egyik legismertebb animációs sorozata, 4 mocskos szájú negyedikesről, amely szürreális humorával űz gúnyt világunkból.",
+            "Mi van a Földön túl? Honnan jöttünk? Miből lettünk? Mi az élet titka? Valóban határtalanok a képességeink és hatalmunk? Kik vagyunk? Ez az izgalmas sorozat bemutatja, hogyan alakította a tudomány az életünket.",
             "hu",
         ),
     ],
     credits_=XmltvCredits(
         directors=[
             XmltvDirector(
-                name="Trey Parker",
+                name="Nicola Cook",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/trey-parker/person-18931",
+                        "http://port.hu/adatlap/szemely/nicola-cook/person-348622",
                         "port.hu",
                     ),
                 ],
             ),
             XmltvDirector(
-                name="Matt Stone",
+                name="Giles Harrison",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/matt-stone/person-105060",
+                        "http://port.hu/adatlap/szemely/giles-harrison/person-348623",
                         "port.hu",
                     ),
                 ],
             ),
             XmltvDirector(
-                name="Eric Stough",
+                name="Peter Oxley",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/eric-stough/person-217037",
+                        "http://port.hu/adatlap/szemely/peter-oxley/person-338242",
                         "port.hu",
                     ),
                 ],
             ),
-        ],
-        actors=[
-            XmltvActor(
-                name="Trey Parker",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/trey-parker/person-18931",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Matt Stone",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/matt-stone/person-105060",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Mary Kay Bergman",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/mary-kay-bergman/person-105061",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Isaac Hayes",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/isaac-hayes/person-9026",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Eliza Schneider",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/eliza-schneider/person-217039",
-                        "port.hu",
-                    ),
-                ],
-            ),
-        ],
-    ),
-    date=XmltvDate("1997"),
-    categories=[
-        XmltvCategory("Movie/Drama", "en"),
-        XmltvCategory("Film/Dráma", "hu"),
-        XmltvCategory("series", "en"),
-    ],
-    urls=[
-        XmltvUrl(
-            "https://port.hu/adatlap/sorozat/tv/south-park/glutenmentes-ebola/event-tv-1159526715-194/episode-317219",
-            "port.hu",
-        ),
-    ],
-    episode_nums=[XmltvEpisodeNum("17.1.0/1", "xmltv_ns")],
-    ratings=[
-        XmltvRating(
-            value=XmltvValue("18"),
-            icons=[
-                XmltvIcon("https://port.hu/img/agelimit/raster/18_age_icon_black.png"),
-            ],
-        ),
-    ],
-)
-
-parse_series = XmltvProgramme(
-    start="20230209002500 +0100",
-    stop="20230209005500 +0100",
-    channel="194.port.hu",
-    titles=[XmltvTitle("South Park")],
-    sub_titles=[
-        XmltvSubTitle(
-            "Gluténmentes ebola - (amerikai animációs sorozat, 18/2. rész)",
-            "hu",
-        ),
-    ],
-    categories=[
-        XmltvCategory("Movie/Drama", "en"),
-        XmltvCategory("Film/Dráma", "hu"),
-        XmltvCategory("series", "en"),
-    ],
-    urls=[
-        XmltvUrl(
-            "https://port.hu/adatlap/sorozat/tv/south-park/glutenmentes-ebola/event-tv-1159526715-194/episode-317219",
-            "port.hu",
-        ),
-    ],
-    episode_nums=[XmltvEpisodeNum("17.1.0/1", "xmltv_ns")],
-    ratings=[
-        XmltvRating(
-            value=XmltvValue("18"),
-            icons=[
-                XmltvIcon("https://port.hu/img/agelimit/raster/18_age_icon_black.png"),
-            ],
-        ),
-    ],
-)
-
-parse_movie_slow = XmltvProgramme(
-    start="20230211100500 +0100",
-    stop="20230211120000 +0100",
-    channel="6.port.hu",
-    titles=[XmltvTitle("Marley meg én")],
-    sub_titles=[
-        XmltvSubTitle("(amerikai vígjáték, filmdráma, családi film, 2008)", "hu"),
-    ],
-    descs=[
-        XmltvDesc(
-            "John és Jennifer Grogan friss házasok. Mindketten újságíróként dolgoznak, szeretik a munkájukat, de még jobban egymást. Amikor beköltöznek első közös otthonukba, John úgy érzi, ideje lenne igazi családot alapítani. Mivel azonban még nem érzi magát felkészültnek az apaságra, egyik barátja tanácsára örökbe fogadnak egy kölyökkutyát, hogy némi tapasztalatot szerezzenek a gondoskodásról. Marley, a pajkos és játékos labradorkölyök azonban teljesen felforgatja addigi életüket, és hamarosan katasztrófa sújtotta övezetté változtatja otthonukat...",
-            "hu",
-        ),
-    ],
-    credits_=XmltvCredits(
-        directors=[
             XmltvDirector(
-                name="David Frankel",
+                name="Nat Sharman",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/david-frankel/person-132192",
+                        "http://port.hu/adatlap/szemely/nat-sharman/person-348624",
                         "port.hu",
                     ),
                 ],
             ),
-        ],
-        actors=[
-            XmltvActor(
-                name="Owen Wilson",
+            XmltvDirector(
+                name="Jeremy Turner",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/owen-wilson/person-12884",
+                        "http://port.hu/adatlap/szemely/jeremy-turner/person-257166",
                         "port.hu",
                     ),
                 ],
             ),
-            XmltvActor(
-                name="Jennifer Aniston",
+            XmltvDirector(
+                name="Nigel Walk",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/jennifer-aniston/person-14454",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Eric Dane",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/eric-dane/person-178440",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Kathleen Turner",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/kathleen-turner/person-8302",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvActor(
-                name="Alan Arkin",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/alan-arkin/person-7994",
+                        "http://port.hu/adatlap/szemely/nigel-walk/person-273225",
                         "port.hu",
                     ),
                 ],
@@ -602,19 +456,10 @@ parse_movie_slow = XmltvProgramme(
         ],
         producers=[
             XmltvProducer(
-                name="Gil Netter",
+                name="Aidan Laverty",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/gil-netter/person-121926",
-                        "port.hu",
-                    ),
-                ],
-            ),
-            XmltvProducer(
-                name="Karen Rosenfelt",
-                urls=[
-                    XmltvUrl(
-                        "https://port.hu/adatlap/szemely/karen-rosenfelt/person-295041",
+                        "http://port.hu/adatlap/szemely/aidan-laverty/person-334962",
                         "port.hu",
                     ),
                 ],
@@ -622,30 +467,91 @@ parse_movie_slow = XmltvProgramme(
         ],
         composers=[
             XmltvComposer(
-                name="Theodore Shapiro",
+                name="Ty Unwin",
                 urls=[
                     XmltvUrl(
-                        "https://port.hu/adatlap/szemely/theodore-shapiro/person-152429",
+                        "http://port.hu/adatlap/szemely/ty-unwin/person-206154",
                         "port.hu",
                     ),
                 ],
             ),
         ],
     ),
-    date=XmltvDate("2008"),
+    date=XmltvDate("2010"),
     categories=[
-        XmltvCategory("Comedy", "en"),
-        XmltvCategory("Movie/Drama", "en"),
-        XmltvCategory("Children's/Youth programmes", "en"),
-        XmltvCategory("Vígjáték", "hu"),
-        XmltvCategory("Film/Dráma", "hu"),
-        XmltvCategory("Gyerek/Ifjúsági program", "hu"),
-        XmltvCategory("movie", "en"),
+        XmltvCategory("Education/Science/Factual", "en"),
+        XmltvCategory("Oktatás/Tudomány/Tényfeltáró", "hu"),
+        XmltvCategory("series", "en"),
     ],
-    length=XmltvLength("118", "minutes"),
     urls=[
         XmltvUrl(
-            "https://port.hu/adatlap/film/tv/marley-meg-en-marley-me/event-tv-1159915099-6/movie-100058",
+            "https://port.hu/adatlap/sorozat/tv/a-tudomany-tortenete-history-of-science/mi-van-rajtunk-kivul/event-tv-1624256384-9/episode-3042606",
+            "port.hu",
+        ),
+    ],
+    episode_nums=[XmltvEpisodeNum("0.0.0/1", "xmltv_ns")],
+    ratings=[
+        XmltvRating(
+            value=XmltvValue("12"),
+            icons=[
+                XmltvIcon("https://port.hu/img/agelimit/raster/12_age_icon_black.png"),
+            ],
+        ),
+    ],
+)
+
+parse_series = XmltvProgramme(
+    start="20241208041500 +0100",
+    stop="20241208050500 +0100",
+    channel="9.port.hu",
+    titles=[XmltvTitle("A tudomány története")],
+    sub_titles=[
+        XmltvSubTitle(
+            "Mi van rajtunk kívül? - (angol dokumentumfilm sorozat, 1/1. rész)",
+            "hu",
+        ),
+    ],
+    categories=[
+        XmltvCategory("Education/Science/Factual", "en"),
+        XmltvCategory("Oktatás/Tudomány/Tényfeltáró", "hu"),
+        XmltvCategory("series", "en"),
+    ],
+    urls=[
+        XmltvUrl(
+            "https://port.hu/adatlap/sorozat/tv/a-tudomany-tortenete-history-of-science/mi-van-rajtunk-kivul/event-tv-1624256384-9/episode-3042606",
+            "port.hu",
+        ),
+    ],
+    episode_nums=[XmltvEpisodeNum("0.0.0/1", "xmltv_ns")],
+    ratings=[
+        XmltvRating(
+            value=XmltvValue("12"),
+            icons=[
+                XmltvIcon("https://port.hu/img/agelimit/raster/12_age_icon_black.png"),
+            ],
+        ),
+    ],
+)
+
+parse_movie_slow = XmltvProgramme(
+    start="20241208050500 +0100",
+    stop="20241208060000 +0100",
+    channel="9.port.hu",
+    titles=[XmltvTitle("Tengeralattjárók")],
+    sub_titles=[
+        XmltvSubTitle("(2023)", "hu"),
+    ],
+    descs=[
+        XmltvDesc(
+            "Az aktuális rész ismertetője: A tengeralattjárók a technológia csúcsai. Ilyen a Redoutable, amely 16 nukleáris rakétát képes szállítani. Vagy a Suffren, egy igazi vízalatti ragadozó. És itt van a Rubis is, a II. világháborús veterán.",
+            "hu",
+        ),
+    ],
+    date=XmltvDate("2023"),
+    length=XmltvLength("63", "minutes"),
+    urls=[
+        XmltvUrl(
+            "https://port.hu/adatlap/film/tv/tengeralattjarok-mega-building-collection-record-breaking-submarines/event-tv-1624256387-9/movie-256363",
             "port.hu",
         ),
     ],
@@ -660,26 +566,17 @@ parse_movie_slow = XmltvProgramme(
 )
 
 parse_movie = XmltvProgramme(
-    start="20230211100500 +0100",
-    stop="20230211120000 +0100",
-    channel="6.port.hu",
-    titles=[XmltvTitle("Marley meg én")],
+    start="20241208050500 +0100",
+    stop="20241208060000 +0100",
+    channel="9.port.hu",
+    titles=[XmltvTitle("Tengeralattjárók")],
     sub_titles=[
-        XmltvSubTitle("(amerikai vígjáték, filmdráma, családi film, 2008)", "hu"),
+        XmltvSubTitle("(2023)", "hu"),
     ],
-    date=XmltvDate("2008"),
-    categories=[
-        XmltvCategory("Comedy", "en"),
-        XmltvCategory("Movie/Drama", "en"),
-        XmltvCategory("Children's/Youth programmes", "en"),
-        XmltvCategory("Vígjáték", "hu"),
-        XmltvCategory("Film/Dráma", "hu"),
-        XmltvCategory("Gyerek/Ifjúsági program", "hu"),
-        XmltvCategory("movie", "en"),
-    ],
+    date=XmltvDate("2023"),
     urls=[
         XmltvUrl(
-            "https://port.hu/adatlap/film/tv/marley-meg-en-marley-me/event-tv-1159915099-6/movie-100058",
+            "https://port.hu/adatlap/film/tv/tengeralattjarok-mega-building-collection-record-breaking-submarines/event-tv-1624256387-9/movie-256363",
             "port.hu",
         ),
     ],
