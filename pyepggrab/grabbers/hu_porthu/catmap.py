@@ -326,6 +326,7 @@ CATDICT = {
     "szappanopera": Cat.SOAP_MELODRAMA_FOLKLORIC,
     "szatíra": Cat.MOVIE_DRAMA,
     "szatirikus vígjáték": Cat.MOVIE_DRAMA,
+    "szkeccsfilm": Cat.SHOW_GAMESHOW,
     "szélhámosfilm": Cat.MOVIE_DRAMA,
     "színházi felvétel": Cat.ARTS_CULTURE,
     "színházi közvetítés": Cat.ARTS_CULTURE,
