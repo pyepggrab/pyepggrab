@@ -1,12 +1,11 @@
 """retrieving and parsing extended program inforamtion from port.hu."""
 
+import time
 from dataclasses import dataclass
 from multiprocessing import Queue
 from typing import Dict, List, Optional
 
 import requests
-from pyrate_limiter import Limiter, RequestRate  # type: ignore[import]
-from requests_ratelimiter import LimiterSession  # type: ignore[import]
 
 from pyepggrab.grabbers.hu_porthu.use_ip_adapter import UseIPAdapter
 from pyepggrab.grabbers.hu_porthu.utils import to_absolute_porturl
@@ -26,6 +25,8 @@ class ProcessCtx:
     """Every subprocess has its own context and reuses it."""
 
     session: requests.Session
+    target_interval_ns: float
+    last: int
 
     @classmethod
     def init_context(cls, rate_limit: int, interval: int, ip_queue: Queue) -> None:
@@ -38,13 +39,15 @@ class ProcessCtx:
 
         Only executed in other processes not in the main process.
         """
-        limiter = Limiter(RequestRate(rate_limit, interval))
-        cls.session = LimiterSession(limiter=limiter, per_host=False)
+        cls.session = requests.Session()
 
         port_ip = ip_queue.get()
         use_ip_adepter = UseIPAdapter({"port.hu": port_ip})
         cls.session.mount("http://", use_ip_adepter)
         cls.session.mount("https://", use_ip_adepter)
+
+        cls.target_interval_ns = interval / rate_limit * 1_000_000_000
+        cls.last = time.monotonic_ns()
 
     @classmethod
     def gen_programs(cls, url: str, json: List[Dict]) -> ProcResult:
@@ -52,6 +55,8 @@ class ProcessCtx:
 
         Only executed in other processes not in the main process.
         """
+        cls._do_rate_limit()
+
         if not cls.session:
             msg = "RequestProcess.session missing"
             raise TypeError(msg)
@@ -69,3 +74,13 @@ class ProcessCtx:
             "Using basic information."
         )
         return ProcResult(create_xprogramme(json), err)
+
+    @classmethod
+    def _do_rate_limit(cls) -> None:
+        """Sleep to reach the target request rate."""
+        now = time.monotonic_ns()
+        diff = now - cls.last
+        if diff < cls.target_interval_ns:
+            time.sleep((cls.target_interval_ns - diff) / 1_000_000_000)
+
+        cls.last = time.monotonic_ns()
