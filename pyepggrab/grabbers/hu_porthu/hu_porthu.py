@@ -43,7 +43,7 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
 
-GRABBER_VERSION = "v2"
+GRABBER_VERSION = "v3"
 GRABBER_DESCRIPTION = "Hungary (port.hu)"
 GRABBER_CAPABILITIES = ["baseline", "manualconfig"]
 MAX_RETRIES = 3
