@@ -1,9 +1,10 @@
 """retrieving and parsing extended program inforamtion from port.hu."""
 
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from logging import INFO, WARNING
 from multiprocessing import Queue
-from typing import Dict, List, Optional
+from typing import Dict, List, Tuple
 
 import requests
 
@@ -18,7 +19,9 @@ class ProcResult:
     """Result of a program retrieving process."""
 
     result: List[XmltvProgramme]
-    error: Optional[str] = None
+    failed: bool
+    retry: bool = False
+    logs: List[Tuple[int, str]] = field(default_factory=list)
 
 
 class ProcessCtx:
@@ -27,9 +30,15 @@ class ProcessCtx:
     session: requests.Session
     target_interval_ns: float
     last: int
+    tag: str
 
     @classmethod
-    def init_context(cls, rate_limit: int, interval: int, ip_queue: Queue) -> None:
+    def init_context(
+        cls,
+        rate_limit: int,
+        interval: int,
+        ip_queue: "Queue[str]",
+    ) -> None:
         """Initialize the request session for a process.
 
         :param rate_limit: amount of requests allowed per `interval`
@@ -48,6 +57,7 @@ class ProcessCtx:
 
         cls.target_interval_ns = interval / rate_limit * 1_000_000_000
         cls.last = time.monotonic_ns()
+        cls.tag = cls._ipv4_to_tag(port_ip)
 
     @classmethod
     def gen_programs(cls, url: str, json: List[Dict]) -> ProcResult:
@@ -61,19 +71,69 @@ class ProcessCtx:
             msg = "RequestProcess.session missing"
             raise TypeError(msg)
 
-        rsp = cls.session.get(
-            to_absolute_porturl(url),
-            timeout=30,
-        )
-        if rsp.status_code == requests.codes.OK:
-            return ProcResult(create_xprogramme(json, rsp))
+        logs = []
 
-        err = (
-            f"Response code indicating failure: {rsp.status_code}. "
-            f"Retrieving program details failed. Url: {rsp.url} "
-            "Using basic information."
-        )
-        return ProcResult(create_xprogramme(json), err)
+        try:
+            rsp = cls.session.get(
+                to_absolute_porturl(url),
+                timeout=30,
+            )
+        except requests.Timeout:
+            logs = [
+                (
+                    WARNING,
+                    f"{cls.tag} Request timeout. Url: {rsp.url}. ",
+                ),
+            ]
+            return ProcResult(
+                create_xprogramme(json),
+                failed=True,
+                retry=True,
+                logs=logs,
+            )
+
+        if rsp.status_code == requests.codes.OK:
+            return ProcResult(create_xprogramme(json, rsp), failed=False)
+
+        if rsp.status_code == requests.codes.TOO_MANY_REQUESTS:
+            old_target = cls.target_interval_ns / 1_000_000_000
+            cls.target_interval_ns *= 2
+            new_target = cls.target_interval_ns / 1_000_000_000
+            logs.extend(
+                [
+                    (
+                        WARNING,
+                        f"{cls.tag} Rate limit exceeded. "
+                        "You may consider adjusting the rate limit. "
+                        "Increasing the time between requests",
+                    ),
+                    (
+                        INFO,
+                        f"from {old_target}s to {new_target}s",
+                    ),
+                ],
+            )
+            return ProcResult(
+                create_xprogramme(json),
+                failed=True,
+                logs=logs,
+                retry=True,
+            )
+
+        logs = [
+            (
+                WARNING,
+                f"{cls.tag} Response code indicating failure: {rsp.status_code}. "
+                f"Retrieving program details failed. Url: {rsp.url} "
+                "Using basic information.",
+            ),
+        ]
+        return ProcResult(create_xprogramme(json), failed=True, logs=logs)
+
+    @classmethod
+    def _ipv4_to_tag(cls, ip: str) -> str:
+        """Convert an IPv4 address to a log tag."""
+        return "[" + ".".join(ip.split(".")[2:]) + "]"
 
     @classmethod
     def _do_rate_limit(cls) -> None:
