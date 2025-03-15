@@ -3,13 +3,13 @@
 import argparse
 import logging
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import Future, ProcessPoolExecutor
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from math import floor
 from multiprocessing import Queue
 from multiprocessing.context import BaseContext
-from typing import Dict, List, NoReturn, Optional, Tuple
+from typing import Dict, Generic, List, NoReturn, Optional, Tuple, TypeVar
 
 import dns.resolver  # type: ignore[import]
 import requests
@@ -21,7 +21,7 @@ from pyepggrab.grabbers.hu_porthu.config import (
     GrabberConfig,
     GrabberConfigEncoder,
 )
-from pyepggrab.grabbers.hu_porthu.request_proc import ProcessCtx
+from pyepggrab.grabbers.hu_porthu.request_proc import ProcessCtx, ProcResult
 from pyepggrab.grabbers.hu_porthu.utils import (
     HOST,
     INIT_URL,
@@ -43,9 +43,10 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
 
-GRABBER_VERSION = "v2"
+GRABBER_VERSION = "v3"
 GRABBER_DESCRIPTION = "Hungary (port.hu)"
 GRABBER_CAPABILITIES = ["baseline", "manualconfig"]
+MAX_RETRIES = 3
 
 
 @dataclass
@@ -75,6 +76,18 @@ class RetriveOptions:
     jobs: int
     ratelimit: int
     interval: int
+
+
+T = TypeVar("T")
+
+
+@dataclass
+class ProcInfo(Generic[T]):
+    """Information about a submitted task."""
+
+    future: "Future[T]"
+    url: str
+    tries: int
 
 
 def get_simple_channel_list() -> List[dict]:
@@ -123,67 +136,11 @@ def fetch_prog_info(
             len(progmap.get(None, [])),
         )
 
-        total = len(jsons) - len(progmap.get(None, []))
-        onepercent = total / 100
-        nextpercent = onepercent
-        current = 0
+        total_len = len(jsons)
 
         del jsons
 
-        log.debug("Downloading details and generating programs")
-
-        port_ips = dns.resolver.resolve(HOST)
-
-        if len(port_ips) == 0:
-            log.critical("Failed resolve '%s'. No IP address returned.", HOST)
-            return []
-
-        if len(port_ips) < options.jobs:
-            log.warning(
-                "Available endpoints are less the the requested jobs (%d < %d). "
-                "Only do that if you know what you are doing",
-                len(port_ips),
-                options.jobs,
-            )
-
-        ctx: BaseContext
-        try:
-            # use forkserver if available
-            # saves memory on Linux platforms compared to fork
-            ctx = multiprocessing.get_context("forkserver")
-        except ValueError:
-            ctx = multiprocessing.get_context()
-
-        # fill a queue with alternative IP addresses for the same host
-        # each process gets exactly one and uses it during its whole lifetime
-        ip_queue: Queue[str] = ctx.Queue(options.jobs)
-        for i in range(options.jobs):
-            ip_queue.put(port_ips[i % len(port_ips)].address)
-
-        with ProcessPoolExecutor(
-            max_workers=options.jobs,
-            mp_context=ctx,
-            initializer=ProcessCtx.init_context,
-            initargs=(options.ratelimit, options.interval, ip_queue),
-        ) as ppe:
-            for result in ppe.map(
-                ProcessCtx.gen_programs,
-                *zip(*((k, v) for k, v in progmap.items() if k)),
-            ):
-                if result.error:
-                    log.warning(result.error)
-
-                progs += result.result
-                current += len(result.result)
-                if current >= nextpercent:
-                    log.info(
-                        "%d%% completed (%d/%d)",
-                        int(current / onepercent),
-                        current,
-                        total,
-                    )
-                    nextpercent = (floor(current / onepercent) + 1) * onepercent
-        log.debug("Downloading details and generating programs done")
+        progs = fetch_prog_slow(options, progmap, total_len)
     else:
         progmap = {None: jsons}
 
@@ -197,6 +154,130 @@ def fetch_prog_info(
 
     log.debug("Generated %d programs", len(progs))
     return progs
+
+
+def fetch_prog_slow(
+    options: RetriveOptions,
+    progmap: Dict[Optional[str], List[Dict]],
+    total_len: int,
+) -> List[XmltvProgramme]:
+    """Fetch program information and create XMLTV Programme from them."""
+    progs: List[XmltvProgramme] = []
+    log = Log.get_grabber_logger()
+
+    total = total_len - len(progmap.get(None, []))
+    onepercent = total / 100
+    nextpercent = onepercent
+    current = 0
+
+    log.debug("Downloading details and generating programs")
+
+    port_ips = dns.resolver.resolve(HOST)
+
+    if len(port_ips) == 0:
+        log.critical("Failed resolve '%s'. No IP address returned.", HOST)
+        return []
+
+    if len(port_ips) < options.jobs:
+        log.warning(
+            "Available endpoints are less the the requested jobs (%d < %d). "
+            "Only do that if you know what you are doing",
+            len(port_ips),
+            options.jobs,
+        )
+
+    ctx: BaseContext
+    try:
+        # use forkserver if available
+        # saves memory on Linux platforms compared to fork
+        ctx = multiprocessing.get_context("forkserver")
+    except ValueError:
+        ctx = multiprocessing.get_context()
+
+    # fill a queue with alternative IP addresses for the same host
+    # each process gets exactly one and uses it during its whole lifetime
+    ip_queue: Queue[str] = ctx.Queue(options.jobs)
+    for i in range(options.jobs):
+        ip_queue.put(port_ips[i % len(port_ips)].address)
+
+    ppe = ProcessPoolExecutor(
+        max_workers=options.jobs,
+        mp_context=ctx,
+        initializer=ProcessCtx.init_context,
+        initargs=(options.ratelimit, options.interval, ip_queue),
+    )
+
+    futures = [
+        ProcInfo(ppe.submit(ProcessCtx.gen_programs, url, data), url, 1)
+        for url, data in progmap.items()
+        if url
+    ]
+
+    try:
+        while len(futures) > 0:
+            pinfo = futures.pop(0)
+
+            result = pinfo.future.result()
+
+            replay_proc_logs(result)
+
+            if result.retry and pinfo.tries < MAX_RETRIES:
+                pinfo.tries += 1
+
+                log.debug("Retrying (%d) %s", pinfo.tries, pinfo.url)
+
+                new_future = ppe.submit(
+                    ProcessCtx.gen_programs,
+                    pinfo.url,
+                    progmap[pinfo.url],
+                )
+                pinfo.future = new_future
+                futures.append(pinfo)
+                continue
+
+            log_if_basic_fallback(pinfo, result)
+
+            progs += result.result
+            current += len(result.result)
+            if current >= nextpercent:
+                log.info(
+                    "%d%% completed (%d/%d)",
+                    int(current / onepercent),
+                    current,
+                    total,
+                )
+                nextpercent = (floor(current / onepercent) + 1) * onepercent
+    finally:
+        # 3.8 compat: shutdown(cancel_futures=True) is not available
+        for pi in futures:
+            pi.future.cancel()
+
+        ppe.shutdown()
+
+    log.debug("Downloading details and generating programs done")
+    return progs
+
+
+def log_if_basic_fallback(pinfo: ProcInfo, result: ProcResult) -> None:
+    """Log if the program retrieval fallen back to basic info."""
+    log = Log.get_grabber_logger()
+    if pinfo.tries == MAX_RETRIES:
+        log.warning(
+            "Max retry reached. Using basic information only. Url: %s",
+            pinfo.url,
+        )
+    elif result.failed:
+        log.error(
+            "Failed to download details. Using basic information only. Url: %s",
+            pinfo.url,
+        )
+
+
+def replay_proc_logs(result: ProcResult) -> None:
+    """Replay logs generated by a subprocess."""
+    log = Log.get_grabber_logger()
+    for level, entry in result.logs:
+        log.log(level, entry)
 
 
 def check_expected_channels(
