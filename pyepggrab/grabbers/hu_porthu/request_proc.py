@@ -82,7 +82,7 @@ class ProcessCtx:
             logs = [
                 (
                     WARNING,
-                    f"{cls.tag} Request timeout. Url: {rsp.url}. ",
+                    f"{cls.tag} Request timeout. Url: {url}. ",
                 ),
             ]
             return ProcResult(
