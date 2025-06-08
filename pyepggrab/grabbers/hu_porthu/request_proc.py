@@ -91,6 +91,19 @@ class ProcessCtx:
                 retry=True,
                 logs=logs,
             )
+        except requests.exceptions.ConnectionError as e:
+            logs = [
+                (
+                    WARNING,
+                    f"{cls.tag} {e.strerror}. Url: {url}. ",
+                ),
+            ]
+            return ProcResult(
+                create_xprogramme(json),
+                failed=True,
+                retry=True,
+                logs=logs,
+            )
 
         if rsp.status_code == requests.codes.OK:
             return ProcResult(create_xprogramme(json, rsp), failed=False)
