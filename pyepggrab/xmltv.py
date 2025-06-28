@@ -29,6 +29,9 @@ def to_xmltv_date(datetime: datetime.datetime) -> str:
 class _XmltvBase:
     """Base class for all XML objects."""
 
+    # This object is mutable, so it is not hashable
+    __hash__ = None  # type: ignore
+
     def to_xml(self, parent: Optional[etree._Element] = None) -> etree._Element:
         """Convert the object to XML representation."""
         raise NotImplementedError()
