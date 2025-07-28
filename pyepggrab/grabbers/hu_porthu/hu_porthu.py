@@ -14,6 +14,7 @@ from typing import Dict, Generic, List, NoReturn, Optional, Tuple, TypeVar
 import dns.resolver  # type: ignore[import]
 import requests
 
+from pyepggrab.__about__ import __version__
 from pyepggrab.ask import ask_boolean, ask_many_boolean
 from pyepggrab.configmanager import ConfigManager
 from pyepggrab.grabbers.hu_porthu.config import (
@@ -494,7 +495,7 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
         channels.update(chs)
         progjsons.extend(pjs)
 
-    tv = XmltvTv()
+    tv = XmltvTv(generator_info_name=f"hu_porthu {GRABBER_VERSION} ({__version__})")
     if len(progjsons) > 0:
         try:
             progs = fetch_prog_info(progjsons, options)
