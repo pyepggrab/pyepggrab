@@ -413,7 +413,8 @@ def get_api_limits() -> ApiLimits:
                     start_offset,
                 )
                 end_offset = min(
-                    (datetime.fromisoformat(j_days[-1]).date() - today).days, end_offset
+                    (datetime.fromisoformat(j_days[-1]).date() - today).days,
+                    end_offset,
                 )
             else:
                 valid = False
