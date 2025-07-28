@@ -5,10 +5,17 @@ from typing import Optional
 from pyepggrab.utils import remove_prefix, remove_suffix
 
 ID_BASE = ".port.hu"
+ID_RADIO = ".radio" + ID_BASE
+
+PORT_TV = "tvchannel-"
+PORT_RADIO = "radiochannel-"
+
 HOST = "port.hu"
 BASE_URL = f"https://{HOST}/"
 INIT_URL = BASE_URL + "tvapi/init"
+RADIO_INIT_URL = BASE_URL + "radioapi/init"
 PROGLIST_URL = BASE_URL + "tvapi"
+RADIO_PROGLIST_URL = BASE_URL + "radioapi"
 
 
 def portid_to_xmlid(portid: str) -> str:
@@ -16,25 +23,34 @@ def portid_to_xmlid(portid: str) -> str:
 
     Port ids are used in the channel ids.
 
-    `tvchannel-123` to `123.port.hu`.
+    `tvchannel-123` to `123.port.hu` and
+    `radiochannel-123` to `123.radio.port.hu`
 
     Similar to: `eventid_to_xmlid()`
     """
-    return remove_prefix(portid, "tvchannel-") + ID_BASE
+    if portid.startswith(PORT_RADIO):
+        return remove_prefix(portid, PORT_RADIO) + ID_RADIO
+
+    return remove_prefix(portid, PORT_TV) + ID_BASE
 
 
 def xmlid_to_portid(xmlid: str) -> str:
     """Convert an xmltv id to a port.hu id.
 
-    `123.port.hu` to `tvchannel-123`
+    `123.port.hu` to `tvchannel-123` and
+    `123.radio.port.hu` to `radiochannel-123`
     """
-    return "tvchannel-" + remove_suffix(xmlid, ID_BASE)
+    if xmlid.endswith(ID_RADIO):
+        return PORT_RADIO + remove_suffix(xmlid, ID_RADIO)
+
+    return PORT_TV + remove_suffix(xmlid, ID_BASE)
 
 
 def eventid_to_xmlid(eventid: str) -> str:
-    """Convert an event id to an xmltv channel id.
+    """Convert an event-tv id to an xmltv channel id.
 
     Event ids are used in the program ids.
+    This is not compatible with radio event ids.
 
     `event-tv-1111111111-234` to `234.port.hu`.
 

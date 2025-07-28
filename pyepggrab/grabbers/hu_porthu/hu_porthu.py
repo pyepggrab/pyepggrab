@@ -25,7 +25,11 @@ from pyepggrab.grabbers.hu_porthu.request_proc import ProcessCtx, ProcResult
 from pyepggrab.grabbers.hu_porthu.utils import (
     HOST,
     INIT_URL,
+    PORT_RADIO,
+    PORT_TV,
     PROGLIST_URL,
+    RADIO_INIT_URL,
+    RADIO_PROGLIST_URL,
     portid_to_xmlid,
     xmlid_to_portid,
 )
@@ -43,7 +47,7 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo  # type: ignore # noqa: F401, RUF100
 
-GRABBER_VERSION = "v3"
+GRABBER_VERSION = "v4"
 GRABBER_DESCRIPTION = "Hungary (port.hu)"
 GRABBER_CAPABILITIES = ["baseline", "manualconfig"]
 MAX_RETRIES = 3
@@ -92,11 +96,19 @@ class ProcInfo(Generic[T]):
 
 def get_simple_channel_list() -> List[dict]:
     """Return the list of channels that currently supported."""
-    rsp = requests.get(INIT_URL, timeout=10)
-    if rsp.status_code == requests.codes.OK:
-        chlist = rsp.json()
-        return chlist["channels"]
-    return []
+    log = Log.get_grabber_logger()
+    chlist = []
+
+    for url in [INIT_URL, RADIO_INIT_URL]:
+        rsp = requests.get(url, timeout=10)
+        if rsp.status_code == requests.codes.OK:
+            chs = rsp.json()["channels"]
+            if chs:
+                chlist.extend(chs)
+        else:
+            log.error("Failed to fetch channel list from %s", url)
+
+    return chlist
 
 
 def build_url_map(progjsons: List[Dict]) -> Dict[Optional[str], List[Dict]]:
@@ -319,7 +331,10 @@ def extract_channel_prog(ch: Dict) -> List[Dict]:
     """Extract the list of programs on a channel from the port.hu api json."""
     ret_json: List[Dict] = []
     prog: dict
-    for prog in ch["programs"]:
+
+    # The radio endpoint returns channel object without "programs" if there is
+    # none for the selected time
+    for prog in ch.get("programs", []):
         ret_json.append(prog)
     return ret_json
 
@@ -384,26 +399,31 @@ def get_api_limits() -> ApiLimits:
     end_offset = 0
     channels: List[Channel] = []
 
-    response = requests.get(INIT_URL, timeout=10)
-    if response.status_code == requests.codes.OK:
-        resp_json: dict = response.json()
+    for url in [INIT_URL, RADIO_INIT_URL]:
+        response = requests.get(url, timeout=10)
+        if response.status_code == requests.codes.OK:
+            resp_json: dict = response.json()
 
-        j_days = resp_json.get("daysDate")
-        if j_days and len(j_days) > 0:
-            today = datetime.now(ZoneInfo("Europe/Budapest")).date()
-            start_offset = (datetime.fromisoformat(j_days[0]).date() - today).days
-            end_offset = (datetime.fromisoformat(j_days[-1]).date() - today).days
-        else:
-            valid = False
+            j_days = resp_json.get("daysDate")
+            if j_days and len(j_days) > 0:
+                today = datetime.now(ZoneInfo("Europe/Budapest")).date()
+                start_offset = max(
+                    (datetime.fromisoformat(j_days[0]).date() - today).days,
+                    start_offset,
+                )
+                end_offset = min(
+                    (datetime.fromisoformat(j_days[-1]).date() - today).days, end_offset
+                )
+            else:
+                valid = False
 
-        j_channels = resp_json.get("channels")
-        if j_channels:
-            channels = []
-            for ch in j_channels:
-                conf_ch = ch_to_configchannel(ch)
-                if conf_ch.id_ in [None, ""]:
-                    valid = False
-                channels.append(conf_ch)
+            j_channels = resp_json.get("channels")
+            if j_channels:
+                for ch in j_channels:
+                    conf_ch = ch_to_configchannel(ch)
+                    if conf_ch.id_ in [None, ""]:
+                        valid = False
+                    channels.append(conf_ch)
 
     return ApiLimits(
         valid,
@@ -413,23 +433,20 @@ def get_api_limits() -> ApiLimits:
     )
 
 
-def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
-    """Retrieve guide from port.hu api.
-
-    :param chan_ids: channel ids to be retrieved (port.hu id format (tvchannel-*))
-    :param days: how many days to retrieve
-    :param offset: start `offset` days after today
-    :param slow: retrieve webpages to extract extended information
-    :param jobs: number of parallel  jobs to run if `slow` is `true`
-    """
+def retrive_channeldata(
+    url: str,
+    chan_ids: List[str],
+    days: int,
+    offset: int,
+) -> Tuple[Dict[str, XmltvChannel], List[Dict]]:
+    """Retrive channels and progjsons."""
     log = Log.get_grabber_logger()
 
     dateformat = "%Y-%m-%d"
     date_from = datetime.now(ZoneInfo("Europe/Budapest")).date() + timedelta(
-        days=options.offset,
+        days=offset,
     )
-    # date_from = date.today() + timedelta(days=offset)
-    date_to = date_from + timedelta(days=options.days)
+    date_to = date_from + timedelta(days=days)
 
     log.info(
         "retrieving programs from %s to %s for %d channel(s)",
@@ -439,7 +456,7 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
     )
 
     response = requests.get(
-        PROGLIST_URL,
+        url,
         params={
             "channel_id[]": chan_ids,
             "i_datetime_from": date_from.strftime(dateformat),
@@ -455,7 +472,27 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
 
     log.debug("Retrieved %d programs on %d channel(s)", len(progjsons), len(channels))
 
-    del response
+    return channels, progjsons
+
+
+def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
+    """Retrieve guide from port.hu api.
+
+    :param chan_ids: channel ids to be retrieved (port.hu id format (tvchannel-*))
+    :param options: `RetriveOptions` object
+    """
+    log = Log.get_grabber_logger()
+
+    channels: Dict[str, XmltvChannel] = {}
+    progjsons: List[Dict] = []
+
+    for url, chans in [
+        (PROGLIST_URL, [ch for ch in chan_ids if ch.startswith(PORT_TV)]),
+        (RADIO_PROGLIST_URL, [ch for ch in chan_ids if ch.startswith(PORT_RADIO)]),
+    ]:
+        chs, pjs = retrive_channeldata(url, chans, options.days, options.offset)
+        channels.update(chs)
+        progjsons.extend(pjs)
 
     tv = XmltvTv()
     if len(progjsons) > 0:
