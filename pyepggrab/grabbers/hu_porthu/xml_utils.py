@@ -10,6 +10,7 @@ import roman  # type: ignore[import]
 
 from pyepggrab.grabbers.hu_porthu.catmap import CATDICT
 from pyepggrab.grabbers.hu_porthu.utils import (
+    HOST,
     append_if_not_empty,
     eventid_to_xmlid,
     portid_to_xmlid,
@@ -195,6 +196,22 @@ def build_subtitle(  # noqa: PLR0913
     return append_if_not_empty(episode_title, " - ", subt)
 
 
+def get_chid_from_progjson(progjson: dict) -> str:
+    """Extract the channel id from a progjson."""
+    # try `channelId` first
+    # `channelId` only exists for radio channels and
+    # radio event ids unsuitable to get the channel because
+    # there is no channel info in them
+    chid = progjson.get("channelId")
+    if chid:  # radio
+        chid = portid_to_xmlid(chid)
+    else:  # tv
+        chid = progjson.get("id")
+        chid = eventid_to_xmlid(chid) if chid else "unknown"
+
+    return chid
+
+
 def create_xprogramme(  # noqa: PLR0912, PLR0915
     progjsons: List[Dict],
     response: Optional[requests.Response] = None,
@@ -337,8 +354,7 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
         if "title" in progjson:
             j_title = progjson["title"]
         else:
-            chid = progjson.get("id")
-            chid = eventid_to_xmlid(chid) if chid else "unknown"
+            chid = get_chid_from_progjson(progjson)
             start_time = progjson.get("start_datetime", "unknown")
             msg = (
                 "No title present for program on channel "
@@ -398,33 +414,40 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
         j_porturl = progjson.get("film_url")
         j_prev_shown = progjson.get("is_repeat", False)
         if "restriction" in progjson:
-            restr: dict = progjson["restriction"]
-            j_age_limit = restr.get("age_limit")
-            j_age_limit_img = restr.get("ageLimitImage")
-            if j_age_limit_img:
-                j_age_limit_img = to_absolute_porturl(to_friendlyimage(j_age_limit_img))
+            restr = progjson["restriction"]
+            # "restriction" is an empry list on the radio endpoint
+            if isinstance(restr, dict):
+                j_age_limit = restr.get("age_limit")
+                j_age_limit_img = restr.get("ageLimitImage")
+                if j_age_limit_img:
+                    j_age_limit_img = to_absolute_porturl(
+                        to_friendlyimage(j_age_limit_img),
+                    )
+            else:
+                j_age_limit = None
+                j_age_limit_img = None
 
         xtitle = XmltvTitle(j_title)
 
         xdescs = [XmltvDesc(page_desc, lang="hu")] if page_desc else []
 
         xdirectors = [
-            XmltvDirector(name=name, urls=[XmltvUrl(url, "port.hu")] if url else [])
+            XmltvDirector(name=name, urls=[XmltvUrl(url, HOST)] if url else [])
             for name, url in jld_directors
         ]
 
         xactors = [
-            XmltvActor(name=name, urls=[XmltvUrl(url, "port.hu")] if url else [])
+            XmltvActor(name=name, urls=[XmltvUrl(url, HOST)] if url else [])
             for name, url in jld_actors
         ]
 
         xproducers = [
-            XmltvProducer(name=name, urls=[XmltvUrl(url, "port.hu")] if url else [])
+            XmltvProducer(name=name, urls=[XmltvUrl(url, HOST)] if url else [])
             for name, url in jld_producers
         ]
 
         xcomposers = [
-            XmltvComposer(name=name, urls=[XmltvUrl(url, "port.hu")] if url else [])
+            XmltvComposer(name=name, urls=[XmltvUrl(url, HOST)] if url else [])
             for name, url in jld_composers
         ]
 
@@ -447,9 +470,7 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             xcategories = match_categories(j_re_categories.split(", "))
 
         xlength = XmltvLength(og_duration, units="minutes") if og_duration else None
-        xurls = (
-            [XmltvUrl(to_absolute_porturl(j_porturl), "port.hu")] if j_porturl else []
-        )
+        xurls = [XmltvUrl(to_absolute_porturl(j_porturl), HOST)] if j_porturl else []
 
         if jld_season_num:
             seasonnum = int(jld_season_num)
@@ -545,7 +566,7 @@ def create_xprogramme(  # noqa: PLR0912, PLR0915
             XmltvProgramme(
                 start=to_xmltv_date(datetime.fromisoformat(progjson["start_datetime"])),
                 stop=to_xmltv_date(datetime.fromisoformat(progjson["end_datetime"])),
-                channel=eventid_to_xmlid(progjson["id"]),
+                channel=get_chid_from_progjson(progjson),
                 titles=[xtitle],
                 sub_titles=xsub_titles,
                 descs=xdescs,

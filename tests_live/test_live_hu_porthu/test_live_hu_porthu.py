@@ -49,6 +49,36 @@ class TestLiveHuPorthu(unittest.TestCase):
         self.assertEqual(1, channels)
         self.assertGreater(programs, 0)
 
+    def test_simple_radio(self) -> None:
+        sp = subprocess.run(
+            args=[
+                sys.executable,
+                "-m",
+                MODULE,
+                "--debug",
+                "--config-file",
+                str(TESTDATADIR.joinpath("testconfig_radio.conf")),
+                "--days",
+                "1",
+                "--output",
+                self.tmpfile,
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        print(sp.stderr)
+
+        self.assertEqual(0, sp.returncode)
+
+        xml = etree.parse(self.tmpfile)
+        root = xml.getroot()
+        channels = len([c for c in root if c.tag == "channel"])
+        programs = len([c for c in root if c.tag == "programme"])
+
+        self.assertEqual(1, channels)
+        self.assertGreater(programs, 0)
+
     def test_simple_noprog(self) -> None:
         sp = subprocess.run(
             args=[
@@ -81,6 +111,38 @@ class TestLiveHuPorthu(unittest.TestCase):
         self.assertEqual(0, channels)
         self.assertEqual(0, programs)
 
+    def test_simple_noprog_radio(self) -> None:
+        sp = subprocess.run(
+            args=[
+                sys.executable,
+                "-m",
+                MODULE,
+                "--debug",
+                "--config-file",
+                str(TESTDATADIR.joinpath("testconfig_radio.conf")),
+                "--days",
+                "1",
+                "--offset",
+                "30",  # only 15 days of programs available
+                "--output",
+                self.tmpfile,
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        print(sp.stderr)
+
+        self.assertEqual(0, sp.returncode)
+
+        xml = etree.parse(self.tmpfile)
+        root = xml.getroot()
+        channels = len([c for c in root if c.tag == "channel"])
+        programs = len([c for c in root if c.tag == "programme"])
+
+        self.assertEqual(0, channels)
+        self.assertEqual(0, programs)
+
     def test_slow(self) -> None:
         sp = subprocess.run(
             args=[
@@ -90,6 +152,39 @@ class TestLiveHuPorthu(unittest.TestCase):
                 "--debug",
                 "--config-file",
                 str(TESTDATADIR.joinpath("testconfig.conf")),
+                "--days",
+                "1",
+                "--slow",
+                "--jobs",
+                "1",
+                "--output",
+                self.tmpfile,
+            ],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        print(sp.stderr)
+
+        self.assertEqual(0, sp.returncode)
+
+        xml = etree.parse(self.tmpfile)
+        root = xml.getroot()
+        channels = len([c for c in root if c.tag == "channel"])
+        programs = len([c for c in root if c.tag == "programme"])
+
+        self.assertEqual(1, channels)
+        self.assertGreater(programs, 0)
+
+    def test_slow_radio(self) -> None:
+        sp = subprocess.run(
+            args=[
+                sys.executable,
+                "-m",
+                MODULE,
+                "--debug",
+                "--config-file",
+                str(TESTDATADIR.joinpath("testconfig_radio.conf")),
                 "--days",
                 "1",
                 "--slow",

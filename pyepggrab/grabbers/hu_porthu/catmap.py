@@ -331,6 +331,7 @@ CATDICT = {
     "színházi felvétel": Cat.ARTS_CULTURE,
     "színházi közvetítés": Cat.ARTS_CULTURE,
     "színházi magazin": Cat.ARTS_CULTURE_MAGAZINES,
+    "szórakoztató magazin": Cat.MAGAZINES_REPORTS_DOCUMENTARY,
     "szórakoztató műsor": Cat.COMEDY,
     "szórakoztató sorozat": Cat.COMEDY,
     "szórakoztató vetélkedő": Cat.GAMESHOW_QUIZ_CONTEST,

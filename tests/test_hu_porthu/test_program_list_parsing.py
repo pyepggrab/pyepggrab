@@ -126,6 +126,15 @@ class TestProgramListParsing(unittest.TestCase):
             self.assertEqual(str(space_country), str(xprog[0]))
             self.assertEqual(space_country, xprog[0])
 
+    def test_radio(self) -> None:
+        with TESTDATADIR.joinpath("radio.json").open(encoding="UTF-8") as file:
+            jdata = json.load(file)
+            xprog = hu_porthu.create_xprogramme([jdata], None)
+
+            self.assertEqual(1, len(xprog))
+            self.assertEqual(str(parse_radio), str(xprog[0]))
+            self.assertEqual(parse_radio, xprog[0])
+
 
 daystart_dayend_channels = [
     XmltvChannel(
@@ -621,6 +630,13 @@ space_country = XmltvProgramme(
             ],
         ),
     ],
+)
+
+parse_radio = XmltvProgramme(
+    start="20250728060000 +0200",
+    stop="20250728063000 +0200",
+    channel="326.radio.port.hu",
+    titles=[XmltvTitle("Millásreggeli - Best of")],
 )
 
 if __name__ == "__main__":

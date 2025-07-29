@@ -88,7 +88,7 @@ check = [
   "black --check --diff pyepggrab tests tests_live",
 ]
 fmt = [
-  "ruff --select I001 pyepggrab tests tests_live --fix",
+  "ruff check pyepggrab tests tests_live --fix",
   "black pyepggrab tests tests_live",
 ]
 

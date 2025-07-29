@@ -1,0 +1,22 @@
+{
+    "id": "event-radio-1801974975",
+    "title": "Millásreggeli - Best of",
+    "start": "2025-07-28 06:00:00",
+    "end": "2025-07-28 06:30:00",
+    "description": null,
+    "channelId": "radiochannel-326",
+    "repeat": false,
+    "live": false,
+    "start_datetime": "2025-07-28T06:00:00+02:00",
+    "start_time": "06:00",
+    "start_ts": 1753675200,
+    "end_time": "06:30",
+    "end_datetime": "2025-07-28T06:30:00+02:00",
+    "is_child_event": false,
+    "italics": "",
+    "episode_title": null,
+    "highlight": null,
+    "attributes_text": null,
+    "restriction": [],
+    "type": "past"
+}
