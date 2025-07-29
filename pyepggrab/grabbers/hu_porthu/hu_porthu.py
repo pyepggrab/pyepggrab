@@ -40,7 +40,7 @@ from pyepggrab.grabbers.hu_porthu.xml_utils import (
 )
 from pyepggrab.log import Log
 from pyepggrab.pyepggrab import Pyepggrab
-from pyepggrab.xmltv import XmltvChannel, XmltvProgramme, XmltvTv
+from pyepggrab.xmltv import GEN_NAME, XmltvChannel, XmltvProgramme, XmltvTv
 from pyepggrab.xmlwriter import writexml
 
 try:
@@ -496,7 +496,7 @@ def retrieve_guide(chan_ids: List[str], options: RetriveOptions) -> XmltvTv:
         channels.update(chs)
         progjsons.extend(pjs)
 
-    tv = XmltvTv(generator_info_name=f"hu_porthu {GRABBER_VERSION} ({__version__})")
+    tv = XmltvTv(generator_info_name=f"{GEN_NAME} {GRABBER_VERSION} ({__version__})")
     if len(progjsons) > 0:
         try:
             progs = fetch_prog_info(progjsons, options)
