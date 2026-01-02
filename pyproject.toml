@@ -30,7 +30,7 @@ dependencies = [
   "dnspython",
   "extruct",
   "lxml",
-  "requests",
+  'requests!=2.32.0,!=2.32.1',
   "roman",
   'typing_extensions>=4.4; python_version<"3.12"',
   "tzdata",
