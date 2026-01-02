@@ -52,7 +52,7 @@ class TestProgramListParsing(unittest.TestCase):
             jdata = json.load(file)
             chans, progjsons = hu_porthu.extract_channel_data(
                 jdata,
-                ["tvhammel-194", "tvchannel-9"],
+                ["tvchannel-194", "tvchannel-9"],
                 date.fromisoformat("2023-02-09"),
             )
 
