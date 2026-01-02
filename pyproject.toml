@@ -22,6 +22,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
 ]
 dependencies = [
   'backports.zoneinfo; python_version<"3.9"',
@@ -72,7 +73,7 @@ unittest = "python -m unittest discover -b {args}"
 template = "test"
 
 [[tool.hatch.envs.matrixtest.matrix]]
-python = ["38", "39", "310", "311", "312", "313"]
+python = ["38", "39", "310", "311", "312", "313", "314"]
 
 [tool.hatch.envs.style]
 detached = true
