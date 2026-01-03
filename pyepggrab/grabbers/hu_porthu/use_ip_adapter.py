@@ -1,11 +1,11 @@
 """Adapter for the requests module to avoid DNS queries."""
 
-from typing import Dict, Mapping, Optional, Union
+from typing import Dict, Mapping, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from requests import PreparedRequest, Response
 from requests.adapters import HTTPAdapter
-from urllib3 import HTTPConnectionPool
+from urllib3.connectionpool import ConnectionPool, HTTPConnectionPool
 
 
 class UseIPAdapter(HTTPAdapter):
@@ -23,7 +23,7 @@ class UseIPAdapter(HTTPAdapter):
         """Replace hostname in `url` if a mapping exists for it."""
         parurl = urlparse(url)
         for host, ip in self.host_ip_map.items():
-            if host == parurl.hostname:
+            if parurl.hostname and host == parurl.hostname:
                 # NOTE: userinfo maybe replaced
                 new_nethost = parurl.netloc.replace(parurl.hostname, ip)
                 new_parurl = parurl._replace(netloc=new_nethost)
@@ -63,14 +63,36 @@ class UseIPAdapter(HTTPAdapter):
         if "server_hostname" in pool_kw:
             del pool_kw["server_hostname"]
 
+    def _mod_hostname(self, request: PreparedRequest) -> None:
+        if request.url:
+            request.url = self._replace_hostname(request.url)
+
     def get_connection(
         self,
         url: Union[str, bytes],
         proxies: Optional[Mapping[str, str]] = None,
     ) -> HTTPConnectionPool:
-        """Replace hostname and returns a urllib3 connection for `url`."""
+        """Replace hostname and returns a urllib3 connection for `url`.
+
+        Used by requests <= 2.31.0
+        """
         url = self._replace_hostname(str(url))
         return super().get_connection(url, proxies)  # type: ignore[return-value]
+
+    def get_connection_with_tls_context(
+        self,
+        request: PreparedRequest,
+        verify: Union[bool, str, None],
+        proxies: Optional[Mapping[str, str]] = None,
+        cert: Union[Tuple[str, str], str, None] = None,
+    ) -> ConnectionPool:
+        """Replace hostname in the `request`.
+
+        Used by requests >= 2.32.2
+        """
+        if request.url:
+            request.url = self._replace_hostname(request.url)
+        return super().get_connection_with_tls_context(request, verify, proxies, cert)
 
     def send(self, request: PreparedRequest, *args, **kwargs) -> Response:
         """Set up poolmanager and send the `request` object."""

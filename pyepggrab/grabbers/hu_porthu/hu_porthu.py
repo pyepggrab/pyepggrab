@@ -396,8 +396,8 @@ def extract_channel_data(
 def get_api_limits() -> ApiLimits:
     """Retrieve the current state of the API."""
     valid = True
-    start_offset = 0
-    end_offset = 0
+    start_offset = -365
+    end_offset = 365
     channels: List[Channel] = []
 
     for url in [INIT_URL, RADIO_INIT_URL]:
